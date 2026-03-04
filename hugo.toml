@@ -1,7 +1,6 @@
 baseURL = "/"
 languageCode = "en-us"
 title = "Stacked Data"
-theme = ""
 
 [params]
   description = "Deep-dive technical articles on Microsoft Fabric and modern data engineering"
