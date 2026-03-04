@@ -11,7 +11,7 @@ REPO_DESCRIPTION="Stacked Data — Deep-dive technical articles on Microsoft Fab
 AZURE_RESOURCE_GROUP="rg-stacked-data"
 AZURE_LOCATION="westeurope"
 AZURE_SWA_NAME="stacked-data"
-SITE_BASE_URL="https://example.com/"   # update after SWA creates the hostname
+SITE_BASE_URL="https://kind-stone-05609a803.2.azurestaticapps.net/"
 
 echo "==============================="
 echo "  Stacked Data — Site Setup"
