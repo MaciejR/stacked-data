@@ -1,0 +1,28 @@
+baseURL = "/"
+languageCode = "en-us"
+title = "Stacked Data"
+theme = ""
+
+[params]
+  description = "Deep-dive technical articles on Microsoft Fabric and modern data engineering"
+  author = "Maciej Rubczynski"
+  accentColor = "#0078d4"
+
+[markup]
+  [markup.highlight]
+    style = "github"
+    lineNos = false
+    codeFences = true
+  [markup.goldmark.renderer]
+    unsafe = true
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+[pagination]
+  pagerSize = 10
+
+[outputs]
+  home = ["HTML", "RSS"]
+  section = ["HTML", "RSS"]

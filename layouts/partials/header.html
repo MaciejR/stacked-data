@@ -1,0 +1,17 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="site-logo" aria-label="Stacked Data home">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="18" width="24" height="6" rx="2" fill="#0078d4"/>
+        <rect x="2" y="11" width="24" height="6" rx="2" fill="#0078d4" opacity="0.75"/>
+        <rect x="2" y="4"  width="24" height="6" rx="2" fill="#0078d4" opacity="0.5"/>
+      </svg>
+      <span class="site-name">{{ .Site.Title }}</span>
+    </a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="/posts/" {{ if (hasPrefix .RelPermalink "/posts") }}class="active"{{ end }}>Articles</a>
+      <a href="/tags/"  {{ if (hasPrefix .RelPermalink "/tags")  }}class="active"{{ end }}>Topics</a>
+      <a href="/about/" {{ if eq .RelPermalink "/about/" }}class="active"{{ end }}>About</a>
+    </nav>
+  </div>
+</header>

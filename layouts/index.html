@@ -1,0 +1,33 @@
+{{ define "main" }}
+<section class="hero">
+  <div class="container hero-inner">
+    <h1>Deep Dives for Fabric Engineers</h1>
+    <p class="hero-sub">Technical articles on Microsoft Fabric, data architecture, and AI engineering — written by practitioners, for practitioners.</p>
+    <a href="/posts/" class="btn-primary">Browse Articles →</a>
+  </div>
+</section>
+
+<section class="posts-section container">
+  <h2 class="section-title">Latest Articles</h2>
+  <div class="post-grid">
+    {{ range first 9 (where .Site.RegularPages "Section" "posts") }}
+    <article class="post-card">
+      <div class="post-card-meta">
+        {{ with .Params.categories }}<span class="post-category">{{ index . 0 }}</span>{{ end }}
+        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2, 2006" }}</time>
+      </div>
+      <h3 class="post-card-title">
+        <a href="{{ if .Params.externalURL }}{{ .Params.externalURL }}{{ else }}{{ .Permalink }}{{ end }}">{{ .Title }}</a>
+      </h3>
+      <p class="post-card-summary">{{ .Summary | plainify | truncate 130 }}</p>
+      <div class="post-card-footer">
+        <span class="read-time">{{ .ReadingTime }} min read</span>
+        {{ range first 2 .Params.tags }}<span class="post-tag">{{ . }}</span>{{ end }}
+      </div>
+    </article>
+    {{ else }}
+    <p class="no-posts">No articles yet — check back soon.</p>
+    {{ end }}
+  </div>
+</section>
+{{ end }}

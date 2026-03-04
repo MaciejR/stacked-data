@@ -1,0 +1,26 @@
+{{ define "main" }}
+<div class="container list-page">
+  <header class="list-header">
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p class="list-description">{{ . }}</p>{{ end }}
+  </header>
+  <div class="post-grid">
+    {{ range .Pages }}
+    <article class="post-card">
+      <div class="post-card-meta">
+        {{ with .Params.categories }}<span class="post-category">{{ index . 0 }}</span>{{ end }}
+        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2, 2006" }}</time>
+      </div>
+      <h2 class="post-card-title">
+        <a href="{{ if .Params.externalURL }}{{ .Params.externalURL }}{{ else }}{{ .Permalink }}{{ end }}">{{ .Title }}</a>
+      </h2>
+      <p class="post-card-summary">{{ .Summary | plainify | truncate 150 }}</p>
+      <div class="post-card-footer">
+        <span class="read-time">{{ .ReadingTime }} min read</span>
+        {{ range first 2 .Params.tags }}<span class="post-tag">{{ . }}</span>{{ end }}
+      </div>
+    </article>
+    {{ else }}<p class="no-posts">No articles here yet.</p>{{ end }}
+  </div>
+</div>
+{{ end }}
