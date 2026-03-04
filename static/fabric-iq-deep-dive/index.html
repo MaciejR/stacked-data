@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 12 confirmed pitfalls to avoid in production. Includes alternatives comparison, CU sizing guidance, and real-world patterns.">
-    <meta name="author" content="Maciej Rubczynski">
-    <meta property="og:title" content="Microsoft Fabric IQ: What It Is, How to Deploy It, and the Pitfalls Nobody Warns You About">
-    <meta property="og:description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 12 confirmed pitfalls to avoid in production. Includes alternatives comparison, CU sizing guidance, and real-world patterns.">
+    <meta name="description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 11 confirmed pitfalls from the official docs — collected in one place.">
+    <meta name="author" content="Maciej Rubczyński">
+    <meta property="og:title" content="Microsoft Fabric IQ: What It Is, How to Deploy It, and 11 Pitfalls From the Official Docs">
+    <meta property="og:description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 11 confirmed pitfalls from the official docs — collected in one place.">
     <meta property="og:type" content="article">
-    <title>Microsoft Fabric IQ: What It Is, How to Deploy It, and the Pitfalls Nobody Warns You About</title>
+    <title>Microsoft Fabric IQ: What It Is, How to Deploy It, and 11 Pitfalls From the Official Docs</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -396,10 +396,10 @@
 
 <header class="article-hero">
     <div class="category">Microsoft Fabric · Deep Dive</div>
-    <h1>Microsoft Fabric IQ: What It Is, How to Deploy It, and the Pitfalls Nobody Warns You About</h1>
-    <p class="subtitle">A practical guide to the semantic ontology workload announced at Ignite 2025 — architecture, step-by-step deployment, alternatives comparison, and 12 confirmed pitfalls sourced from official docs.</p>
+    <h1>Microsoft Fabric IQ: What It Is, How to Deploy It, and 11 Pitfalls From the Official Docs</h1>
+    <p class="subtitle">A practical guide to the semantic ontology workload announced at Ignite 2025 — architecture, step-by-step deployment, alternatives comparison, and 11 confirmed pitfalls from the Microsoft troubleshooting docs, collected in one place.</p>
     <div class="article-meta">
-        <span>Maciej Rubczynski</span>
+        <span>Maciej Rubczyński</span>
         <span>March 2026</span>
         <span>18 min read</span>
     </div>
@@ -418,15 +418,15 @@
             <li><a href="#deployment">5. Step-by-Step Deployment Guide</a></li>
             <li><a href="#pitfalls">6. Pitfalls &amp; Gotchas</a></li>
             <li><a href="#monitoring">7. Monitoring &amp; Governance</a></li>
-            <li><a href="#patterns">8. Real-World Patterns That Work</a></li>
+            <li><a href="#patterns">8. Recommended Patterns</a></li>
             <li><a href="#summary">9. Summary &amp; Next Steps</a></li>
         </ul>
     </nav>
 
     <!-- INTRO -->
-    <p>If you've spent the last year building on Microsoft Fabric and assumed "Fabric IQ" was just another name for Copilot in Fabric, you're not alone — and you're wrong. Fabric IQ is something fundamentally different, and understanding that difference is the first thing you need to do before touching the deployment guide.</p>
+    <p>If you've spent the last year building on Microsoft Fabric and assumed "Fabric IQ" was just another name for Copilot in Fabric — you're not alone, and you're wrong. They're fundamentally different things.</p>
 
-    <p>This article covers what Fabric IQ actually is, how its architecture works, how to deploy it step by step, and — most importantly — 12 specific pitfalls that will silently break your implementation if you don't know to look for them. All sourced directly from the official docs and verified as of early 2026.</p>
+    <p>This article covers what Fabric IQ actually is, how its architecture works, how to deploy it step by step, and 11 pitfalls sourced directly from the official Microsoft troubleshooting docs — collected here so you don't have to hunt across five separate pages.</p>
 
     <div class="callout callout-warning">
         <div class="callout-title">Before you dive in — preview status reality check</div>
@@ -834,6 +834,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
 
     <div class="pitfall">
         <h3>Pitfall 9: Aggregation Bug in Data Agent</h3>
+        <p style="font-size:0.8rem;color:var(--color-text-secondary);margin-bottom:0.5rem;"><em>Verified March 2026 — check <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">troubleshooting docs</a> for latest status; this is the type of bug Microsoft may fix in a preview update.</em></p>
         <p class="pitfall-label">Symptom</p>
         <p>GROUP BY queries from the Data Agent return wrong or unordered results.</p>
         <p class="pitfall-label">Cause</p>
@@ -870,18 +871,6 @@ DESCRIBE TABLE your_table_name;</code></pre>
         </div>
     </div>
 
-    <div class="pitfall">
-        <h3>Pitfall 12 (also see intro): Preview Instability</h3>
-        <p class="pitfall-label">Symptom</p>
-        <p>Behavior changes between sessions, documented features don't appear in the UI, or the ontology canvas is unresponsive.</p>
-        <p class="pitfall-label">Cause</p>
-        <p>Fabric IQ is in public preview. No versioning/rollback, some known query bugs, and capacity cost is not yet well-documented. See the callout at the top of this article for the full preview status summary.</p>
-        <div class="callout callout-tip">
-            <div class="callout-title">Fix</div>
-            <p>Use Fabric IQ for pilots, prototypes, and learning. For production-critical workloads, wait for GA. Monitor the <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new" target="_blank">Fabric What's New page</a> for GA announcements.</p>
-        </div>
-    </div>
-
     <!-- SECTION 7 -->
     <h2 id="monitoring">7. Monitoring &amp; Governance</h2>
 
@@ -889,8 +878,8 @@ DESCRIBE TABLE your_table_name;</code></pre>
     <p>Fabric IQ (like all Fabric workloads) consumes Fabric CUs. The primary cost driver for IQ is the <strong>Graph item refresh</strong> — each scheduled or manual refresh contributes to your capacity. Data Agent queries also consume CUs. Monitor using the <strong>Fabric Capacity Metrics App</strong>, filtering by the Graph item to isolate IQ-related consumption. Set up capacity alerts before you hit the limit.</p>
 
     <div class="callout callout-note">
-        <div class="callout-title">Rough sizing guide (F4 capacity)</div>
-        <p>A Graph refresh of ~500K entity instances typically consumes 10–30 CUs over 2–5 minutes, depending on relationship complexity. For comparison, a standard Power BI dataset refresh of similar size costs ~5–15 CUs. Monitor the Fabric Capacity Metrics App after your first few refreshes to calibrate your own schedule before committing to frequent intervals.</p>
+        <div class="callout-title">How to size your Graph refresh budget</div>
+        <p>Microsoft has not published CU benchmarks for Fabric IQ as of early 2026. The only reliable approach is empirical: run your first few graph refreshes with the <strong>Fabric Capacity Metrics App</strong> open, filter by the Graph item, and record CU consumption vs. entity count and refresh duration. Set a capacity alert before scheduling frequent refreshes — the Capacity Metrics App is the source of truth, not any pre-published estimate.</p>
     </div>
 
     <h3>Data Residency and Azure OpenAI</h3>
@@ -909,7 +898,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     <p>Keep the set of Contributors small. Ontology changes are not versioned and can break downstream agents.</p>
 
     <!-- SECTION 8 -->
-    <h2 id="patterns">8. Real-World Patterns That Work</h2>
+    <h2 id="patterns">8. Recommended Patterns</h2>
 
     <h3>Pattern 1: Eventhouse as the Real-Time Spine</h3>
     <p>Bind Eventhouse for live operational data and Lakehouse for historical batch — then let the ontology federate both. The graph handles the join. A concrete example: in a manufacturing plant, sensor telemetry arrives in Eventhouse at second-level granularity. Maintenance records and equipment specs live in a Lakehouse as managed delta tables. Without Fabric IQ, answering "which machines are at risk based on current readings versus historical failure patterns?" requires an ad hoc join across two systems. With IQ, the ontology encodes the relationship between <code>Machine → SensorReading → MaintenanceRecord</code>, and the Data Agent translates the natural language question into federated GQL + KQL automatically.</p>
@@ -938,7 +927,7 @@ When asked about customers, use the Customer entity type.</code></pre>
 
     <p>Fabric IQ is a genuinely novel capability that addresses a real enterprise problem: the disconnect between raw data structures and the business language that people and AI agents need to reason about. The Ontology item, in particular, is a compelling approach to making enterprise data AI-ready in a way that scales.</p>
 
-    <p>That said, it is very much a <strong>preview product</strong>. The 12 pitfalls documented in this article are real limitations you'll hit in practice — not hypothetical edge cases. Some are clearly known bugs with workarounds (aggregation, Decimal type). Others are architectural constraints that require careful planning (column mapping, Import mode, manual refresh).</p>
+    <p>That said, it is very much a <strong>preview product</strong>. The 11 pitfalls documented in this article are real limitations you'll hit in practice — not hypothetical edge cases. Some are clearly known bugs with workarounds (aggregation, Decimal type). Others are architectural constraints that require careful planning (column mapping, Import mode, manual refresh).</p>
 
     <p><strong>What's stable and worth using today:</strong></p>
     <ul>
@@ -968,6 +957,8 @@ When asked about customers, use the Customer entity type.</code></pre>
     <!-- REFERENCES -->
     <section class="references">
         <h2>References &amp; Further Reading</h2>
+
+        <p style="font-size:0.9rem;color:var(--color-text-secondary);margin-bottom:1rem;"><strong>Official Microsoft docs</strong></p>
         <ol>
             <li>
                 <a href="https://learn.microsoft.com/en-us/fabric/iq/overview" target="_blank">What is Fabric IQ (preview)?</a>
@@ -987,7 +978,7 @@ When asked about customers, use the Customer entity type.</code></pre>
             <li>
                 <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">Troubleshooting ontology (preview)</a>
                 <span class="source-type">docs</span><br>
-                <span class="source-desc">Microsoft Learn — official troubleshooting table for all known issues and fixes.</span>
+                <span class="source-desc">Microsoft Learn — official troubleshooting table for all known issues and fixes. Primary source for pitfalls in this article.</span>
             </li>
             <li>
                 <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-frequently-asked-questions" target="_blank">Ontology (preview) frequently asked questions</a>
@@ -1000,6 +991,11 @@ When asked about customers, use the Customer entity type.</code></pre>
                 <span class="source-desc">Microsoft Learn — hands-on Lakeshore Retail tutorial covering the full IQ deployment flow.</span>
             </li>
             <li>
+                <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/copilot-enable-fabric" target="_blank">Enable Copilot in Fabric</a>
+                <span class="source-type">docs</span><br>
+                <span class="source-desc">Microsoft Learn — Copilot deployment steps, SKU requirements, and capacity planning.</span>
+            </li>
+            <li>
                 <a href="https://blog.fabric.microsoft.com/en-us/blog/from-data-platform-to-intelligence-platform-introducing-microsoft-fabric-iq" target="_blank">From Data Platform to Intelligence Platform: Introducing Microsoft Fabric IQ</a>
                 <span class="source-type">announcement</span><br>
                 <span class="source-desc">Microsoft Fabric Blog — Ignite 2025 announcement with product vision and five-component overview.</span>
@@ -1009,15 +1005,14 @@ When asked about customers, use the Customer entity type.</code></pre>
                 <span class="source-type">announcement</span><br>
                 <span class="source-desc">Microsoft Fabric Blog — deep-dive on the Ontology item, automated generation, and agent integration.</span>
             </li>
-            <li>
-                <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/copilot-enable-fabric" target="_blank">Enable Copilot in Fabric</a>
-                <span class="source-type">docs</span><br>
-                <span class="source-desc">Microsoft Learn — Copilot deployment steps, SKU requirements, and capacity planning warnings.</span>
-            </li>
+        </ol>
+
+        <p style="font-size:0.9rem;color:var(--color-text-secondary);margin:1.25rem 0 1rem;"><strong>Community &amp; analyst</strong></p>
+        <ol start="10">
             <li>
                 <a href="https://cloudwars.com/ai/microsoft-debuts-work-iq-fabric-iq-and-foundry-iq-a-unified-intelligence-layer-for-the-ai-powered-enterprise/" target="_blank">Microsoft Debuts Work IQ, Fabric IQ, and Foundry IQ</a>
                 <span class="source-type">blog</span><br>
-                <span class="source-desc">Cloud Wars — analyst perspective on the broader IQ family and Microsoft's enterprise AI strategy.</span>
+                <span class="source-desc">Cloud Wars, November 2025 — analyst perspective on the broader IQ family and Microsoft's enterprise AI strategy.</span>
             </li>
             <li>
                 <a href="https://community.fabric.microsoft.com/t5/Webinars-and-Video-Gallery/Introduction-of-Microsoft-Fabric-IQ-by-Amir-Netz-at-Microsoft/m-p/4881356" target="_blank">Introduction of Microsoft Fabric IQ by Amir Netz at Microsoft Ignite 2025</a>
@@ -1033,7 +1028,7 @@ When asked about customers, use the Customer entity type.</code></pre>
     </section>
 
     <footer class="article-footer">
-        <p>Written by Maciej Rubczynski · March 2026</p>
+        <p>Written by Maciej Rubczyński · March 2026</p>
         <div class="tags">
             <span class="tag">Microsoft Fabric</span>
             <span class="tag">Fabric IQ</span>
