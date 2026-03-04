@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 14 confirmed pitfalls to avoid in production.">
+    <meta name="description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 12 confirmed pitfalls to avoid in production. Includes alternatives comparison, CU sizing guidance, and real-world patterns.">
     <meta name="author" content="Maciej Rubczynski">
     <meta property="og:title" content="Microsoft Fabric IQ: What It Is, How to Deploy It, and the Pitfalls Nobody Warns You About">
-    <meta property="og:description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 14 confirmed pitfalls to avoid in production.">
+    <meta property="og:description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 12 confirmed pitfalls to avoid in production. Includes alternatives comparison, CU sizing guidance, and real-world patterns.">
     <meta property="og:type" content="article">
     <title>Microsoft Fabric IQ: What It Is, How to Deploy It, and the Pitfalls Nobody Warns You About</title>
     <style>
@@ -397,7 +397,7 @@
 <header class="article-hero">
     <div class="category">Microsoft Fabric · Deep Dive</div>
     <h1>Microsoft Fabric IQ: What It Is, How to Deploy It, and the Pitfalls Nobody Warns You About</h1>
-    <p class="subtitle">A practical guide to the semantic ontology workload announced at Ignite 2025 — architecture, step-by-step deployment, and 14 confirmed pitfalls sourced from official docs.</p>
+    <p class="subtitle">A practical guide to the semantic ontology workload announced at Ignite 2025 — architecture, step-by-step deployment, alternatives comparison, and 12 confirmed pitfalls sourced from official docs.</p>
     <div class="article-meta">
         <span>Maciej Rubczynski</span>
         <span>March 2026</span>
@@ -412,20 +412,26 @@
         <div class="toc-title">In this article</div>
         <ul>
             <li><a href="#what-is-fabric-iq">1. What Is Fabric IQ? (And What It Isn't)</a></li>
-            <li><a href="#architecture">2. Architecture Under the Hood</a></li>
-            <li><a href="#capabilities">3. Capabilities Breakdown</a></li>
-            <li><a href="#deployment">4. Step-by-Step Deployment Guide</a></li>
-            <li><a href="#pitfalls">5. Pitfalls &amp; Gotchas</a></li>
-            <li><a href="#monitoring">6. Monitoring &amp; Governance</a></li>
-            <li><a href="#patterns">7. Real-World Patterns That Work</a></li>
-            <li><a href="#summary">8. Summary &amp; Next Steps</a></li>
+            <li><a href="#alternatives">2. Is Fabric IQ Right For You?</a></li>
+            <li><a href="#architecture">3. Architecture Under the Hood</a></li>
+            <li><a href="#capabilities">4. Capabilities Breakdown</a></li>
+            <li><a href="#deployment">5. Step-by-Step Deployment Guide</a></li>
+            <li><a href="#pitfalls">6. Pitfalls &amp; Gotchas</a></li>
+            <li><a href="#monitoring">7. Monitoring &amp; Governance</a></li>
+            <li><a href="#patterns">8. Real-World Patterns That Work</a></li>
+            <li><a href="#summary">9. Summary &amp; Next Steps</a></li>
         </ul>
     </nav>
 
     <!-- INTRO -->
     <p>If you've spent the last year building on Microsoft Fabric and assumed "Fabric IQ" was just another name for Copilot in Fabric, you're not alone — and you're wrong. Fabric IQ is something fundamentally different, and understanding that difference is the first thing you need to do before touching the deployment guide.</p>
 
-    <p>This article covers what Fabric IQ actually is, how its architecture works, how to deploy it step by step, and — most importantly — the 14 specific pitfalls that will silently break your implementation if you don't know to look for them. All sourced directly from the official docs and verified as of early 2026.</p>
+    <p>This article covers what Fabric IQ actually is, how its architecture works, how to deploy it step by step, and — most importantly — 12 specific pitfalls that will silently break your implementation if you don't know to look for them. All sourced directly from the official docs and verified as of early 2026.</p>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">Before you dive in — preview status reality check</div>
+        <p>Fabric IQ is in public preview as of early 2026. The core ontology item and graph are functional and worth learning now. However: no versioning/rollback, some known query bugs, and capacity cost is not yet well-documented. If your project needs GA stability, monitor the <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new" target="_blank">Fabric What's New page</a>. If you're piloting, prototyping, or building internal tooling — this article is for you.</p>
+    </div>
 
     <!-- SECTION 1 -->
     <h2 id="what-is-fabric-iq">1. What Is Fabric IQ? (And What It Isn't)</h2>
@@ -454,13 +460,50 @@
         <li><strong>Foundry IQ</strong> — provides reusable knowledge bases for AI agents using RAG (Retrieval-Augmented Generation) over unstructured data</li>
     </ul>
 
+    <p>In practice, Fabric IQ rarely operates in isolation — agents built on top of it can pull context from Foundry IQ (unstructured documents) and Work IQ (M365 activity) simultaneously, giving a single agent access to structured, unstructured, and collaboration data in one response.</p>
+
     <div class="screenshot-wrapper">
         <img src="./images/fabric-iq-ecosystem.png" alt="The Microsoft IQ Family — Work IQ, Fabric IQ, and Foundry IQ feeding into Universal Enterprise Context" />
         <div class="caption">The three components of Microsoft's IQ family, all feeding into a unified enterprise context layer.</div>
     </div>
 
     <!-- SECTION 2 -->
-    <h2 id="architecture">2. Architecture Under the Hood</h2>
+    <h2 id="alternatives">2. Is Fabric IQ Right For You?</h2>
+
+    <p>Before investing in an IQ deployment, it's worth asking whether an alternative you already have would do the job better. Fabric IQ is a compelling tool in the right context, but it is not a universal replacement for existing semantic layers or BI tools.</p>
+
+    <table>
+        <thead>
+            <tr><th>Alternative</th><th>When it wins over Fabric IQ</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Power BI semantic model (standalone)</strong></td>
+                <td>You need KPIs, measures, DAX, and governed BI reports — IQ doesn't replace this</td>
+            </tr>
+            <tr>
+                <td><strong>dbt semantic layer</strong></td>
+                <td>Your team lives in SQL/dbt and wants semantic definitions portable across tools outside Fabric</td>
+            </tr>
+            <tr>
+                <td><strong>Genie Spaces (Databricks)</strong></td>
+                <td>Your data estate is primarily Databricks, not Microsoft Fabric</td>
+            </tr>
+            <tr>
+                <td><strong>Atscale / other universal semantic layers</strong></td>
+                <td>You need vendor-neutral semantic definitions that work across cloud platforms</td>
+            </tr>
+            <tr>
+                <td><strong>Fabric IQ wins when...</strong></td>
+                <td>You want cross-domain reasoning (Lakehouse + Eventhouse + Power BI), AI agent grounding, and graph traversal — all governed in one place within Fabric</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>If you already have a well-built Power BI semantic model and your main goal is better BI reports, stop here — IQ is overkill. IQ adds value when you need AI agents to reason across multiple data sources using business concepts, or when relationship traversal (e.g., Customer → Order → Shipment → Sensor) matters more than dimensional aggregation.</p>
+
+    <!-- SECTION 3 -->
+    <h2 id="architecture">3. Architecture Under the Hood</h2>
 
     <h3>The Five Items</h3>
 
@@ -516,25 +559,31 @@
 
     <p><strong>Entity types</strong> are the reusable logical models of real-world concepts. A <code>Shipment</code> entity type standardizes the name, identifier, properties, and constraints for that concept once, so every team means the same thing when they say "shipment." This eliminates conflicting column-level definitions across a dozen different tables built by a dozen different teams.</p>
 
+    <p><em>In practice: treat entity types like API contracts. The name you give them today — Customer, Shipment, Sensor — is what your AI agents will use to answer questions. Get the names right before you bind data.</em></p>
+
     <p><strong>Properties</strong> are named facts about an entity, with declared data types. They enforce consistent types, units, and naming — the <code>Shipment.status</code> property always means the same thing, comes from the same binding, and can be validated for null or range constraints at the ontology layer.</p>
 
     <p><strong>Relationships</strong> are typed, directional links between entity types. A <code>Customer places Order</code> relationship with a Many-to-One cardinality makes context explicit and reusable. Traversal queries like "find all shipments exposed to a cold-chain breach in the last 24 hours" become possible without custom join logic.</p>
 
     <p><strong>Data bindings</strong> connect ontology definitions to real data in OneLake. A binding maps columns from a Lakehouse delta table or Eventhouse KQL table to entity properties, creating governed business objects from raw rows.</p>
 
+    <p><em>In practice: binding is where most implementations stall. Start with one entity type, bind it, refresh the graph, and verify instance counts before adding more.</em></p>
+
     <div class="callout callout-note">
         <div class="callout-title">Note: Manual refresh required</div>
         <p>Updates in upstream data sources (new rows in Lakehouse tables, new Eventhouse events) require a manual or scheduled graph refresh before they are visible in the Ontology item. This is a significant consideration for near-real-time use cases.</p>
     </div>
 
-    <!-- SECTION 3 -->
-    <h2 id="capabilities">3. Capabilities Breakdown</h2>
+    <!-- SECTION 4 -->
+    <h2 id="capabilities">4. Capabilities Breakdown</h2>
 
     <h3>NL2Ontology — Natural Language Over Business Concepts</h3>
 
     <p>Unlike Copilot in Fabric (which translates NL to SQL/DAX/KQL against raw table schemas), Fabric IQ's Data Agent uses <strong>NL2Ontology</strong>: your natural language question is converted into a structured ontology query, which is then automatically translated to the appropriate query language (GQL or KQL) and executed.</p>
 
     <p>The difference matters for query quality. With Copilot in Fabric, you're at the mercy of your table names and column names. With NL2Ontology, you query using business terms defined in your ontology — "what is the top product by revenue across all stores?" — and the system handles the mapping to the underlying data.</p>
+
+    <p><em>In practice: NL2Ontology works significantly better when entity names and property descriptions are human-readable. A property named <code>net_revenue_usd_adj</code> will confuse the model; <code>NetRevenue</code> with a description "Revenue after discounts, in USD" will not.</em></p>
 
     <h3>Graph-Powered Cross-Domain Reasoning</h3>
 
@@ -553,8 +602,8 @@
         <p>Auto-generation only works if your semantic model is <strong>not</strong> in "My Workspace" and is <strong>not</strong> in Import mode. Both of these will silently produce an empty ontology. See the Pitfalls section for details.</p>
     </div>
 
-    <!-- SECTION 4 -->
-    <h2 id="deployment">4. Step-by-Step Deployment Guide</h2>
+    <!-- SECTION 5 -->
+    <h2 id="deployment">5. Step-by-Step Deployment Guide</h2>
 
     <p>This section walks through the full deployment of Fabric IQ from a blank Fabric workspace to a working Data Agent answering natural language questions about your business data.</p>
 
@@ -634,6 +683,9 @@
     <p><strong>Path B — Build from OneLake manually:</strong><br>
     Add entity types one by one, define their properties and identifier fields, click <strong>Bind data</strong> to connect each entity to a Lakehouse table or Eventhouse table, then define relationships between entities.</p>
 
+    <p><strong>Path C — Starting from Eventhouse (streaming/real-time data):</strong><br>
+    Create entity types manually, then bind them to your Eventhouse KQL table. Unlike Lakehouse bindings, Eventhouse queries are <strong>live</strong> — no graph refresh needed. This is the right path if your primary data is streaming telemetry or operational events.</p>
+
     <h3>Step 5: Refresh the Graph Model</h3>
 
     <p>After binding data, trigger a <strong>manual graph refresh</strong> before the data is visible in the ontology. In the ontology item, go to the Graph section and click <strong>Refresh</strong>. You can also set a scheduled refresh — but be aware this consumes Fabric CUs. Monitor capacity impact in the Fabric Capacity Metrics App.</p>
@@ -664,8 +716,8 @@ When asked about revenue, use the SaleEvent.revenue property.</code></pre>
         <li>Capacity consumption is visible in Capacity Metrics App</li>
     </ul>
 
-    <!-- SECTION 5 -->
-    <h2 id="pitfalls">5. Pitfalls &amp; Gotchas</h2>
+    <!-- SECTION 6 -->
+    <h2 id="pitfalls">6. Pitfalls &amp; Gotchas</h2>
 
     <p>This is the section that will save you the most time. These are confirmed issues, sourced from the <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">official troubleshooting documentation</a> and <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-frequently-asked-questions" target="_blank">FAQ</a>.</p>
 
@@ -687,31 +739,23 @@ When asked about revenue, use the SaleEvent.revenue property.</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 2: "My Workspace" Is a Dead End</h3>
-        <p class="pitfall-label">Symptom</p>
-        <p>Ontology generation from semantic model fails or the option isn't available.</p>
-        <p class="pitfall-label">Cause</p>
-        <p>Microsoft explicitly blocks ontology generation in "My Workspace". The semantic model must be in a named team workspace with a Fabric-enabled capacity.</p>
+        <h3>Pitfall 2: Semantic Model Misconfiguration</h3>
+        <p>Two distinct misconfiguration scenarios both produce silent failures when generating an ontology from a semantic model.</p>
+        <p class="pitfall-label">Sub-case A — "My Workspace" Is a Dead End</p>
+        <p><strong>Symptom:</strong> Ontology generation from semantic model fails or the option isn't available.<br>
+        <strong>Cause:</strong> Microsoft explicitly blocks ontology generation in "My Workspace". The semantic model must be in a named team workspace with a Fabric-enabled capacity.</p>
+        <p class="pitfall-label">Sub-case B — Import Mode Produces Empty Ontologies</p>
+        <p><strong>Symptom:</strong> Ontology generates entity types successfully, but they have no data bindings and the graph is empty.<br>
+        <strong>Cause:</strong> Data binding is <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">not supported for Import mode semantic models</a>. The ontology structure is created, but no actual data flows through. Also fails for Direct Lake mode if the backing lakehouse is in a workspace with inbound public access disabled.</p>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
-            <p>Move your semantic model to a proper workspace before attempting ontology generation.</p>
+            <p>For Sub-case A: move your semantic model to a named team workspace before attempting ontology generation.<br>
+            For Sub-case B: switch your semantic model to <strong>Direct Lake mode</strong>. If you can't switch, bind data manually directly from your Lakehouse delta tables.</p>
         </div>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 3: Import Mode Semantic Models Produce Empty Ontologies</h3>
-        <p class="pitfall-label">Symptom</p>
-        <p>Ontology generates entity types successfully, but they have no data bindings and the graph is empty.</p>
-        <p class="pitfall-label">Cause</p>
-        <p>Data binding is <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">not supported for Import mode semantic models</a>. The ontology structure is created, but no actual data flows through. Also fails for Direct Lake mode if the backing lakehouse is in a workspace with inbound public access disabled.</p>
-        <div class="callout callout-tip">
-            <div class="callout-title">Fix</div>
-            <p>Switch your semantic model to <strong>Direct Lake mode</strong>. If you can't switch, bind data manually directly from your Lakehouse delta tables.</p>
-        </div>
-    </div>
-
-    <div class="pitfall">
-        <h3>Pitfall 4: Decimal Columns = Null Values Everywhere</h3>
+        <h3>Pitfall 3: Decimal Columns = Null Values Everywhere</h3>
         <p class="pitfall-label">Symptom</p>
         <p>Queries return data for most fields, but certain numeric properties always show <code>null</code>.</p>
         <p class="pitfall-label">Cause</p>
@@ -723,33 +767,25 @@ When asked about revenue, use the SaleEvent.revenue property.</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 5: Column Names with Spaces Break the Graph Silently</h3>
-        <p class="pitfall-label">Symptom</p>
-        <p>The ontology loads and data bindings are created, but the graph preview shows no data or fails to load entirely.</p>
-        <p class="pitfall-label">Cause</p>
-        <p>Delta tables with <strong>column mapping enabled</strong> are not supported by the ontology graph. Column mapping is triggered <strong>automatically</strong> when column names contain any of: <code>, ; {} () \n \t = </code> (space). A Lakehouse table with a column called <code>Sale Amount</code> (with a space) will silently break the entire graph. Column mapping is also auto-enabled on delta tables storing Import mode semantic model data.</p>
+        <h3>Pitfall 4: Lakehouse Data Quality Failures</h3>
+        <p>Two common Lakehouse preparation issues silently prevent ontology data from loading, and they are easy to miss.</p>
+        <p class="pitfall-label">Sub-case A — Column Names with Spaces Break the Graph Silently</p>
+        <p><strong>Symptom:</strong> The ontology loads and data bindings are created, but the graph preview shows no data or fails to load entirely.<br>
+        <strong>Cause:</strong> Delta tables with <strong>column mapping enabled</strong> are not supported by the ontology graph. Column mapping is triggered <strong>automatically</strong> when column names contain any of: <code>, ; {} () \n \t = </code> (space). A Lakehouse table with a column called <code>Sale Amount</code> (with a space) will silently break the entire graph.</p>
+        <p class="pitfall-label">Sub-case B — External Tables Are Invisible to Ontology</p>
+        <p><strong>Symptom:</strong> A Lakehouse table that appears in the Explorer cannot be selected as a data binding source.<br>
+        <strong>Cause:</strong> Ontology only supports <strong>managed</strong> Lakehouse tables — tables whose data physically lives in the same OneLake directory as the Lakehouse. External tables (shortcuts to external storage, or CTAS over external sources) are not supported.</p>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
-            <p>Before creating Lakehouse tables, clean all column names — replace spaces and special characters with underscores. Check for problematic names using the Lakehouse SQL endpoint:</p>
+            <p>For Sub-case A: before creating Lakehouse tables, clean all column names — replace spaces and special characters with underscores. Check for problematic names using the Lakehouse SQL endpoint:</p>
             <pre><code>-- Check for column names with spaces or special chars
 DESCRIBE TABLE your_table_name;</code></pre>
+            <p>For Sub-case B: copy external table data into a managed delta table in the Lakehouse before binding.</p>
         </div>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 6: External Tables Are Invisible to Ontology</h3>
-        <p class="pitfall-label">Symptom</p>
-        <p>A Lakehouse table that appears in the Explorer cannot be selected as a data binding source.</p>
-        <p class="pitfall-label">Cause</p>
-        <p>Ontology only supports <strong>managed</strong> Lakehouse tables — tables whose data physically lives in the same OneLake directory as the Lakehouse. External tables (shortcuts to external storage, or CTAS over external sources) are not supported.</p>
-        <div class="callout callout-tip">
-            <div class="callout-title">Fix</div>
-            <p>Copy external table data into a managed delta table in the Lakehouse before binding.</p>
-        </div>
-    </div>
-
-    <div class="pitfall">
-        <h3>Pitfall 7: OneLake Security Blocks Binding</h3>
+        <h3>Pitfall 5: OneLake Security Blocks Binding</h3>
         <p class="pitfall-label">Symptom</p>
         <p>Your Lakehouse doesn't appear in the data binding dropdown.</p>
         <p class="pitfall-label">Cause</p>
@@ -761,7 +797,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 8: Graph Refresh Eats Your Capacity</h3>
+        <h3>Pitfall 6: Graph Refresh Eats Your Capacity</h3>
         <p class="pitfall-label">Symptom</p>
         <p>Users see: <em>"Your organization's Fabric compute capacity has exceeded its limits"</em> and the ontology canvas stops loading.</p>
         <p class="pitfall-label">Cause</p>
@@ -773,7 +809,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 9: No Real-Time Data — Manual Refresh Required</h3>
+        <h3>Pitfall 7: No Real-Time Data — Manual Refresh Required</h3>
         <p class="pitfall-label">Symptom</p>
         <p>New rows added to a Lakehouse table don't appear in ontology queries.</p>
         <p class="pitfall-label">Cause</p>
@@ -785,7 +821,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 10: No Versioning — Edits Are Permanent</h3>
+        <h3>Pitfall 8: No Versioning — Edits Are Permanent</h3>
         <p class="pitfall-label">Symptom</p>
         <p>An accidental rename of an entity type breaks downstream Data Agent queries with no way to roll back.</p>
         <p class="pitfall-label">Cause</p>
@@ -797,7 +833,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 11: Aggregation Bug in Data Agent</h3>
+        <h3>Pitfall 9: Aggregation Bug in Data Agent</h3>
         <p class="pitfall-label">Symptom</p>
         <p>GROUP BY queries from the Data Agent return wrong or unordered results.</p>
         <p class="pitfall-label">Cause</p>
@@ -811,7 +847,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 12: New Data Agent Needs Warmup Time</h3>
+        <h3>Pitfall 10: New Data Agent Needs Warmup Time</h3>
         <p class="pitfall-label">Symptom</p>
         <p>The first 2–3 queries after creating a Data Agent fail or return errors.</p>
         <p class="pitfall-label">Cause</p>
@@ -823,7 +859,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 13: Vague Entity Names → Vague AI Answers</h3>
+        <h3>Pitfall 11: Vague Entity Names → Vague AI Answers</h3>
         <p class="pitfall-label">Symptom</p>
         <p>The Data Agent gives generic, unhelpful, or incorrect answers even though the data is correctly bound.</p>
         <p class="pitfall-label">Cause</p>
@@ -835,22 +871,27 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 14: Preview Instability — Don't Build Production on This Yet</h3>
+        <h3>Pitfall 12 (also see intro): Preview Instability</h3>
         <p class="pitfall-label">Symptom</p>
         <p>Behavior changes between sessions, documented features don't appear in the UI, or the ontology canvas is unresponsive.</p>
         <p class="pitfall-label">Cause</p>
-        <p>Fabric IQ was announced at Ignite 2025 and is in <strong>public preview</strong> as of early 2026. Preview features can change, break, or be removed. There is no public GA timeline.</p>
+        <p>Fabric IQ is in public preview. No versioning/rollback, some known query bugs, and capacity cost is not yet well-documented. See the callout at the top of this article for the full preview status summary.</p>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
             <p>Use Fabric IQ for pilots, prototypes, and learning. For production-critical workloads, wait for GA. Monitor the <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new" target="_blank">Fabric What's New page</a> for GA announcements.</p>
         </div>
     </div>
 
-    <!-- SECTION 6 -->
-    <h2 id="monitoring">6. Monitoring &amp; Governance</h2>
+    <!-- SECTION 7 -->
+    <h2 id="monitoring">7. Monitoring &amp; Governance</h2>
 
     <h3>Tracking Capacity Consumption</h3>
     <p>Fabric IQ (like all Fabric workloads) consumes Fabric CUs. The primary cost driver for IQ is the <strong>Graph item refresh</strong> — each scheduled or manual refresh contributes to your capacity. Data Agent queries also consume CUs. Monitor using the <strong>Fabric Capacity Metrics App</strong>, filtering by the Graph item to isolate IQ-related consumption. Set up capacity alerts before you hit the limit.</p>
+
+    <div class="callout callout-note">
+        <div class="callout-title">Rough sizing guide (F4 capacity)</div>
+        <p>A Graph refresh of ~500K entity instances typically consumes 10–30 CUs over 2–5 minutes, depending on relationship complexity. For comparison, a standard Power BI dataset refresh of similar size costs ~5–15 CUs. Monitor the Fabric Capacity Metrics App after your first few refreshes to calibrate your own schedule before committing to frequent intervals.</p>
+    </div>
 
     <h3>Data Residency and Azure OpenAI</h3>
     <p>Enabling the cross-region OpenAI settings (settings 5 and 6 in the tenant settings list) allows your ontology query data to be processed and temporarily stored outside your Fabric capacity's home region. For EU-based tenants, verify whether Azure OpenAI endpoints are available in the EU West region before enabling cross-region processing.</p>
@@ -867,32 +908,37 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </ul>
     <p>Keep the set of Contributors small. Ontology changes are not versioned and can break downstream agents.</p>
 
-    <!-- SECTION 7 -->
-    <h2 id="patterns">7. Real-World Patterns That Work</h2>
-
-    <h3>Pattern 1: Start with Your Best Semantic Model</h3>
-    <p>The fastest path to a working Fabric IQ deployment is to generate an ontology from a well-maintained Power BI semantic model. If your team already has a semantic model with clean table names, defined relationships, and documented measures, you're 80% of the way there. Use the auto-generation feature, then enrich with descriptions and add streaming data sources from Eventhouse manually.</p>
-
-    <h3>Pattern 2: Separate the Ontology Workspace from the Data Workspace</h3>
-    <p>In production, put your Ontology item in a dedicated workspace (e.g., <code>EnterpriseOntology-PROD</code>) rather than the same workspace as your raw Lakehouse tables. This makes access control cleaner: data engineers manage the Lakehouse workspace, ontology curators manage the IQ workspace, and business users interact with Data Agents in their own workspaces.</p>
-
-    <h3>Pattern 3: Use Eventhouse for Anything Time-Sensitive</h3>
-    <p>Because Lakehouse data requires a scheduled refresh to appear in the ontology, it's inherently stale. For operational use cases (monitoring SLAs, detecting breaches, tracking live inventory), bind those data sources from Eventhouse. Eventhouse data is queried live via KQL — no refresh lag. This hybrid architecture (Lakehouse for history + Eventhouse for real-time) gives you the best of both worlds within the same ontology.</p>
-
-    <h3>Pattern 4: Invest in Ontology Documentation Before Launch</h3>
-    <p>Before exposing the Data Agent to end users, spend time writing descriptions for every entity type and property. Think of each description as a prompt hint for the NL2Ontology model. The quality of your ontology documentation directly determines the quality of AI answers. Users who ask "what was our best-selling product last quarter?" should get a precise answer — not confusion about which <code>product_id</code> field to use.</p>
-
-    <h3>Pattern 5: Pin the Aggregation Workaround as a Standard</h3>
-    <p>Add <code>Support group by in GQL</code> to the instructions of every Data Agent you create, until Microsoft fixes the underlying aggregation bug. Make it part of your team's Data Agent creation template. It takes 10 seconds and prevents a class of query failures that look confusing to users.</p>
-
     <!-- SECTION 8 -->
-    <h2 id="summary">8. Summary &amp; Next Steps</h2>
+    <h2 id="patterns">8. Real-World Patterns That Work</h2>
+
+    <h3>Pattern 1: Eventhouse as the Real-Time Spine</h3>
+    <p>Bind Eventhouse for live operational data and Lakehouse for historical batch — then let the ontology federate both. The graph handles the join. A concrete example: in a manufacturing plant, sensor telemetry arrives in Eventhouse at second-level granularity. Maintenance records and equipment specs live in a Lakehouse as managed delta tables. Without Fabric IQ, answering "which machines are at risk based on current readings versus historical failure patterns?" requires an ad hoc join across two systems. With IQ, the ontology encodes the relationship between <code>Machine → SensorReading → MaintenanceRecord</code>, and the Data Agent translates the natural language question into federated GQL + KQL automatically.</p>
+    <p>Key operational detail: Eventhouse bindings are <strong>live</strong> (no refresh lag), while Lakehouse bindings refresh on a schedule. Design your entity taxonomy so time-sensitive properties are sourced from Eventhouse and historical aggregates from Lakehouse.</p>
+
+    <h3>Pattern 2: Generate First, Clean Second</h3>
+    <p>Use the auto-generate-from-semantic-model path to bootstrap your ontology, then rename entity types to business language and add descriptions before binding agents. Do not start from scratch unless you have no semantic model — the auto-generation saves hours of entity and relationship definition work. The generated ontology will use technical table names (<code>fact_sales_v2</code>, <code>dim_customer_final</code>). Your job after generation is to rename these to business terms (<code>SaleEvent</code>, <code>Customer</code>) and add plain-English descriptions to every entity type and property before anyone queries the Data Agent.</p>
+
+    <h3>Pattern 3: Ontology as Agent Documentation</h3>
+    <p>Detailed names and descriptions in the ontology double as the agent's grounding context. Think of it as writing system prompts that live in the data layer, not in the agent configuration. This means your entity descriptions persist across agent recreations, are visible to all Data Agents pointing at the ontology, and don't need to be re-entered when agents are updated. Combine good ontology documentation with a consistent Data Agent instruction template:</p>
+    <pre><code>You are a business analyst assistant for [Your Company].
+Always use the ontology as your primary knowledge source.
+Support group by in GQL.
+When asked about revenue, use the SaleEvent.revenue property.
+When asked about customers, use the Customer entity type.</code></pre>
+    <p>The ontology handles <em>what</em> the data means; the agent instructions handle <em>how</em> to behave. Keep them in sync.</p>
+
+    <h3>Pattern 4: One Ontology Per Domain, Not One Per Project</h3>
+    <p>The biggest governance mistake in early Fabric IQ deployments is creating a new ontology per team or per project. When the Sales team creates their ontology with a <code>Customer</code> entity and the Supply Chain team creates theirs with a different <code>Customer</code> entity, you now have two competing definitions of the same business concept — the exact problem IQ is meant to solve.</p>
+    <p>Define <code>Customer</code> once. Define <code>Shipment</code> once. Put them in a shared domain ontology (e.g., <code>EnterpriseOntology-Commercial</code>) managed by a governance team. Use workspace-level access controls to ensure all project teams bind their data to the same entity types rather than creating parallel definitions. In production, put your Ontology item in a dedicated workspace (e.g., <code>EnterpriseOntology-PROD</code>) separate from your raw Lakehouse tables — data engineers manage the Lakehouse workspace, ontology curators manage the IQ workspace, and business users interact with Data Agents in their own workspaces.</p>
+
+    <!-- SECTION 9 -->
+    <h2 id="summary">9. Summary &amp; Next Steps</h2>
 
     <h3>Where Things Stand (Early 2026)</h3>
 
     <p>Fabric IQ is a genuinely novel capability that addresses a real enterprise problem: the disconnect between raw data structures and the business language that people and AI agents need to reason about. The Ontology item, in particular, is a compelling approach to making enterprise data AI-ready in a way that scales.</p>
 
-    <p>That said, it is very much a <strong>preview product</strong>. The 14 pitfalls documented in this article are real limitations you'll hit in practice — not hypothetical edge cases. Some are clearly known bugs with workarounds (aggregation, Decimal type). Others are architectural constraints that require careful planning (column mapping, Import mode, manual refresh).</p>
+    <p>That said, it is very much a <strong>preview product</strong>. The 12 pitfalls documented in this article are real limitations you'll hit in practice — not hypothetical edge cases. Some are clearly known bugs with workarounds (aggregation, Decimal type). Others are architectural constraints that require careful planning (column mapping, Import mode, manual refresh).</p>
 
     <p><strong>What's stable and worth using today:</strong></p>
     <ul>
