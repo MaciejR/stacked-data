@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 11 confirmed pitfalls from the official docs — collected in one place.">
+    <meta name="description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 13 pitfalls — 11 from the official docs and 2 the community found first.">
     <meta name="author" content="Maciej Rubczyński">
-    <meta property="og:title" content="Microsoft Fabric IQ: What It Is, How to Deploy It, and 11 Pitfalls From the Official Docs">
-    <meta property="og:description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 11 confirmed pitfalls from the official docs — collected in one place.">
+    <meta property="og:title" content="Microsoft Fabric IQ: What It Is, How to Deploy It, and 13 Pitfalls From Docs and Community">
+    <meta property="og:description" content="A deep dive into Microsoft Fabric IQ: what the semantic ontology workload is, how to deploy it step by step, and 13 pitfalls — 11 from the official docs and 2 the community found first.">
     <meta property="og:type" content="article">
-    <title>Microsoft Fabric IQ: What It Is, How to Deploy It, and 11 Pitfalls From the Official Docs</title>
+    <title>Microsoft Fabric IQ: What It Is, How to Deploy It, and 13 Pitfalls From Docs and Community</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -396,12 +396,12 @@
 
 <header class="article-hero">
     <div class="category">Microsoft Fabric · Deep Dive</div>
-    <h1>Microsoft Fabric IQ: What It Is, How to Deploy It, and 11 Pitfalls From the Official Docs</h1>
-    <p class="subtitle">A practical guide to the semantic ontology workload announced at Ignite 2025 — architecture, step-by-step deployment, alternatives comparison, and 11 confirmed pitfalls from the Microsoft troubleshooting docs, collected in one place.</p>
+    <h1>Microsoft Fabric IQ: What It Is, How to Deploy It, and 13 Pitfalls From Docs and Community</h1>
+    <p class="subtitle">A practical guide to the semantic ontology workload announced at Ignite 2025 — architecture, step-by-step deployment, alternatives comparison, and 13 pitfalls: 11 from the Microsoft troubleshooting docs and 2 the community discovered first.</p>
     <div class="article-meta">
         <span>Maciej Rubczyński</span>
         <span>March 2026</span>
-        <span>18 min read</span>
+        <span>20 min read</span>
     </div>
 </header>
 
@@ -426,7 +426,7 @@
     <!-- INTRO -->
     <p>If you've spent the last year building on Microsoft Fabric and assumed "Fabric IQ" was just another name for Copilot in Fabric — you're not alone, and you're wrong. They're fundamentally different things.</p>
 
-    <p>This article covers what Fabric IQ actually is, how its architecture works, how to deploy it step by step, and 11 pitfalls sourced directly from the official Microsoft troubleshooting docs — collected here so you don't have to hunt across five separate pages.</p>
+    <p>This article covers what Fabric IQ actually is, how its architecture works, how to deploy it step by step, and 13 pitfalls: 11 sourced from the official Microsoft troubleshooting docs, and 2 found by early adopters in community forums and practitioner blog posts — the kind that aren't in the official docs yet.</p>
 
     <div class="callout callout-warning">
         <div class="callout-title">Before you dive in — preview status reality check</div>
@@ -719,7 +719,12 @@ When asked about revenue, use the SaleEvent.revenue property.</code></pre>
     <!-- SECTION 6 -->
     <h2 id="pitfalls">6. Pitfalls &amp; Gotchas</h2>
 
-    <p>This is the section that will save you the most time. These are confirmed issues, sourced from the <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">official troubleshooting documentation</a> and <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-frequently-asked-questions" target="_blank">FAQ</a>.</p>
+    <p>This is the section that will save you the most time. Pitfalls 1–11 are confirmed issues from the <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">official troubleshooting documentation</a> and <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-frequently-asked-questions" target="_blank">FAQ</a>. Pitfalls 12–13 were first surfaced by practitioners in community forums and blogs — they are not yet in the official docs as of March 2026.</p>
+
+    <div class="callout callout-note">
+        <div class="callout-title">From the community</div>
+        <p>Early adopters have been the most reliable source of undocumented edge cases in Fabric IQ preview. The two community-sourced pitfalls at the end of this section were reported on the <a href="https://community.fabric.microsoft.com/t5/IQ/bd-p/IQCommunity" target="_blank">Fabric IQ Community board</a> and in practitioner blogs before Microsoft acknowledged them.</p>
+    </div>
 
     <div class="screenshot-wrapper">
         <img src="./images/fabric-iq-pitfalls.png" alt="Fabric IQ deployment decision flowchart showing common failure points at each step" />
@@ -747,6 +752,10 @@ When asked about revenue, use the SaleEvent.revenue property.</code></pre>
         <p class="pitfall-label">Sub-case B — Import Mode Produces Empty Ontologies</p>
         <p><strong>Symptom:</strong> Ontology generates entity types successfully, but they have no data bindings and the graph is empty.<br>
         <strong>Cause:</strong> Data binding is <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-troubleshooting" target="_blank">not supported for Import mode semantic models</a>. The ontology structure is created, but no actual data flows through. Also fails for Direct Lake mode if the backing lakehouse is in a workspace with inbound public access disabled.</p>
+        <div class="callout callout-warning">
+            <div class="callout-title">Community perspective</div>
+            <p>Analyst <a href="https://prologika.com/first-look-at-fabric-iq-the-good-the-bad-and-the-ugly/" target="_blank">Teo Lachev at Prologika</a> put it bluntly in his early-adopter review: <em>"Direct Lake-only means Fabric IQ is off-limits for the vast majority of real-world enterprise semantic models, which live in Import mode."</em> If your organization has years of Import mode models, plan for this constraint before committing to Fabric IQ.</p>
+        </div>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
             <p>For Sub-case A: move your semantic model to a named team workspace before attempting ontology generation.<br>
@@ -802,6 +811,10 @@ DESCRIBE TABLE your_table_name;</code></pre>
         <p>Users see: <em>"Your organization's Fabric compute capacity has exceeded its limits"</em> and the ontology canvas stops loading.</p>
         <p class="pitfall-label">Cause</p>
         <p>Every time the underlying Graph item refreshes (scheduled or manual), it consumes Fabric CUs. On large ontologies with frequent refresh schedules, this can push you over capacity.</p>
+        <div class="callout callout-warning">
+            <div class="callout-title">Community report</div>
+            <p>Patrik Boroš at <a href="https://data-mozart.com/beyond-the-lakehouse-first-thoughts-on-fabric-iq/" target="_blank">Data Mozart</a> reported hitting capacity throttling on an <strong>F4 capacity</strong> during a basic Fabric IQ demo with a small dataset. If F4 is not sufficient for a demo, budget accordingly for production workloads. Start IQ pilots on F8 or higher if you expect more than minimal graph refreshes.</p>
+        </div>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
             <p>Monitor the Graph item's CU contribution in the <strong>Fabric Capacity Metrics App</strong>. Reduce or disable the scheduled refresh frequency. Factor Graph refresh into your CU budget before enabling frequent schedules.</p>
@@ -865,9 +878,39 @@ DESCRIBE TABLE your_table_name;</code></pre>
         <p>The Data Agent gives generic, unhelpful, or incorrect answers even though the data is correctly bound.</p>
         <p class="pitfall-label">Cause</p>
         <p>NL2Ontology relies heavily on entity type names, property names, and descriptions to understand what you're asking. If your ontology has entities named <code>fact_v2_final</code> or properties named <code>amt_usd_net_adj</code>, the AI has no idea what they mean.</p>
+        <div class="callout callout-warning">
+            <div class="callout-title">Community experience: auto-generation creates raw SQL names</div>
+            <p>Community walkthroughs confirm that the auto-generate-from-semantic-model feature produces entity names that match your physical table names verbatim — <code>fact_sales_v2</code>, <code>dim_customer_final</code>, <code>bridge_product_subcategory</code>. As reported in the <a href="https://community.fabric.microsoft.com/t5/IQ-Community-Blog/Unifying-Data-into-Intelligence-A-Hands-On-Walk-Through/ba-p/4911603" target="_blank">Fabric community walkthrough</a>: "<em>The auto-generated names were the raw SQL table and column names. We had to manually rename every entity type before the Data Agent could answer sensible questions.</em>" Block out time for this renaming pass — it is not optional.</p>
+        </div>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
             <p>Treat ontology design like API design — names and descriptions are your contract with the AI. Every entity type and property should have a human-readable name (e.g., <code>NetRevenue</code>, not <code>amt_usd_net_adj</code>) and a clear description (e.g., "Revenue after discounts and returns, in USD").</p>
+        </div>
+    </div>
+
+    <div class="pitfall">
+        <h3>Pitfall 12: Schema-Enabled Lakehouses Crash the Graph Preview <span style="font-size:0.75rem;background:#ffeeba;color:#856404;padding:0.1rem 0.45rem;border-radius:3px;font-weight:600;margin-left:0.4rem;text-transform:uppercase;letter-spacing:0.03em;">Community-reported</span></h3>
+        <p style="font-size:0.8rem;color:var(--color-text-secondary);margin-bottom:0.5rem;"><em>Not in official docs as of March 2026 — reported on the <a href="https://community.fabric.microsoft.com/t5/IQ/Cannot-create-Ontology-in-the-official-Ontology-Tutorial/m-p/4918267" target="_blank">Fabric IQ Community board</a>.</em></p>
+        <p class="pitfall-label">Symptom</p>
+        <p>You follow the official Lakeshore Retail tutorial step by step, create the ontology, bind data — and the Graph preview crashes or shows no data, with no clear error message.</p>
+        <p class="pitfall-label">Cause</p>
+        <p>The official tutorial creates a Lakehouse with <strong>schema-enabled namespacing</strong> (e.g., <code>dbo.customers</code> instead of just <code>customers</code>). Community member <em>apturlov</em> reported that ontology graph creation fails silently when the bound Lakehouse uses schema-enabled table namespaces — even when the tutorial instructions are followed exactly. The official tutorial itself may produce a broken graph on first attempt due to this.</p>
+        <div class="callout callout-tip">
+            <div class="callout-title">Fix</div>
+            <p>When creating a Lakehouse for Fabric IQ, disable schema-enabled namespacing (create tables in the default namespace, not under a schema prefix). If you're following the tutorial and hitting this issue, try recreating the Lakehouse without the schema option enabled.</p>
+        </div>
+    </div>
+
+    <div class="pitfall">
+        <h3>Pitfall 13: No REST API, No CLI — Ontology Is UI-Only <span style="font-size:0.75rem;background:#ffeeba;color:#856404;padding:0.1rem 0.45rem;border-radius:3px;font-weight:600;margin-left:0.4rem;text-transform:uppercase;letter-spacing:0.03em;">Community-reported</span></h3>
+        <p style="font-size:0.8rem;color:var(--color-text-secondary);margin-bottom:0.5rem;"><em>Not in official docs as of March 2026 — highlighted by <a href="https://sandervandevelde.wordpress.com/2025/12/25/first-look-at-fabric-ontology/" target="_blank">Sander van de Velde</a> and confirmed by community exploration.</em></p>
+        <p class="pitfall-label">Symptom</p>
+        <p>You try to automate ontology creation or modification (CI/CD pipeline, PowerShell, Fabric REST API) and find no documented API endpoints or CLI commands for ontology management.</p>
+        <p class="pitfall-label">Cause</p>
+        <p>As of early 2026, <strong>there is no REST API and no CLI for the Fabric IQ Ontology item</strong>. All ontology management — creating entity types, defining properties, adding bindings, triggering graph refreshes — must be done through the Fabric UI. As Sander van de Velde noted in his first-look: <em>"I could not find any API or command line support to manage the ontology programmatically. This makes it impossible to integrate into standard DevOps workflows at this stage."</em> Additionally, there is <strong>no inheritance</strong> between entity types (you cannot create a base <code>Person</code> entity and extend it into <code>Employee</code>), and self-referential relationships (an entity linking to itself) are reported to crash the UI.</p>
+        <div class="callout callout-tip">
+            <div class="callout-title">Mitigation</div>
+            <p>Until API support arrives, document your ontology schema externally (e.g., in a spreadsheet or architecture diagram) and treat the UI as the source of truth. Treat ontology changes with the same governance rigor as a database schema migration. Subscribe to the <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new" target="_blank">Fabric What's New</a> page to catch API announcements when they ship.</p>
         </div>
     </div>
 
@@ -927,7 +970,7 @@ When asked about customers, use the Customer entity type.</code></pre>
 
     <p>Fabric IQ is a genuinely novel capability that addresses a real enterprise problem: the disconnect between raw data structures and the business language that people and AI agents need to reason about. The Ontology item, in particular, is a compelling approach to making enterprise data AI-ready in a way that scales.</p>
 
-    <p>That said, it is very much a <strong>preview product</strong>. The 11 pitfalls documented in this article are real limitations you'll hit in practice — not hypothetical edge cases. Some are clearly known bugs with workarounds (aggregation, Decimal type). Others are architectural constraints that require careful planning (column mapping, Import mode, manual refresh).</p>
+    <p>That said, it is very much a <strong>preview product</strong>. The 13 pitfalls documented in this article are real limitations you'll hit in practice — not hypothetical edge cases. Some are clearly known bugs with workarounds (aggregation, Decimal type). Others are architectural constraints that require careful planning (column mapping, Import mode, manual refresh). Two — the schema-enabled Lakehouse crash and the UI-only management lock-in — were found by practitioners before they made it into official documentation.</p>
 
     <p><strong>What's stable and worth using today:</strong></p>
     <ul>
@@ -1023,6 +1066,31 @@ When asked about customers, use the Customer entity type.</code></pre>
                 <a href="https://www.sparity.com/blogs/microsoft-fabric-iq-ontology-explained/" target="_blank">Microsoft Fabric IQ Explained with Ontology for Smarter Business Decisions</a>
                 <span class="source-type">blog</span><br>
                 <span class="source-desc">Sparity, January 2026 — community perspective on practical implementation caveats and governance needs.</span>
+            </li>
+            <li>
+                <a href="https://prologika.com/first-look-at-fabric-iq-the-good-the-bad-and-the-ugly/" target="_blank">First Look at Fabric IQ: The Good, the Bad, and the Ugly</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">Teo Lachev / Prologika, early 2026 — practitioner critique covering the Import mode exclusion and its impact on existing enterprise models. Source for Pitfall 2 community perspective.</span>
+            </li>
+            <li>
+                <a href="https://data-mozart.com/beyond-the-lakehouse-first-thoughts-on-fabric-iq/" target="_blank">Beyond the Lakehouse: First Thoughts on Fabric IQ</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">Patrik Boroš / Data Mozart, 2025 — first-hand report of F4 capacity throttling during a basic Fabric IQ demo. Source for Pitfall 6 community report.</span>
+            </li>
+            <li>
+                <a href="https://sandervandevelde.wordpress.com/2025/12/25/first-look-at-fabric-ontology/" target="_blank">First Look at Fabric Ontology</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">Sander van de Velde, December 2025 — detailed first-look covering the absence of REST API/CLI, no inheritance support, and UI-only management constraints. Source for Pitfall 13.</span>
+            </li>
+            <li>
+                <a href="https://community.fabric.microsoft.com/t5/IQ/Cannot-create-Ontology-in-the-official-Ontology-Tutorial/m-p/4918267" target="_blank">Cannot create Ontology in the official Ontology Tutorial (community thread)</a>
+                <span class="source-type">community</span><br>
+                <span class="source-desc">Fabric IQ Community board, 2026 — community report of schema-enabled Lakehouse causing Graph preview crash when following the official tutorial. Source for Pitfall 12.</span>
+            </li>
+            <li>
+                <a href="https://community.fabric.microsoft.com/t5/IQ-Community-Blog/Unifying-Data-into-Intelligence-A-Hands-On-Walk-Through/ba-p/4911603" target="_blank">Unifying Data into Intelligence: A Hands-On Walk-Through</a>
+                <span class="source-type">community</span><br>
+                <span class="source-desc">Fabric IQ Community Blog, 2026 — step-by-step practitioner walkthrough confirming auto-generated entity names are raw SQL table names requiring manual renaming. Source for Pitfall 11 community experience.</span>
             </li>
         </ol>
     </section>
