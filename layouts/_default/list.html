@@ -17,7 +17,7 @@
       <p class="post-card-summary">{{ .Summary | plainify | truncate 150 }}</p>
       <div class="post-card-footer">
         <span class="read-time">{{ .ReadingTime }} min read</span>
-        {{ range first 2 .Params.tags }}<span class="post-tag">{{ . }}</span>{{ end }}
+        {{ with .Params.tags }}{{ range first 2 . }}<span class="post-tag">{{ . }}</span>{{ end }}{{ end }}
       </div>
     </article>
     {{ else }}<p class="no-posts">No articles here yet.</p>{{ end }}
