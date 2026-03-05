@@ -523,7 +523,7 @@
             </tr>
             <tr>
                 <td><strong>dbt MetricFlow</strong></td>
-                <td>You need semantic definitions that are portable across multiple warehouses (Snowflake, BigQuery, Redshift, Databricks). MetricFlow is a vendor-agnostic query generation engine — semantic definitions travel with your dbt project, not locked to one platform. This is a philosophical difference, not just a team preference.</td>
+                <td>You need semantic definitions portable across multiple warehouses (Snowflake, BigQuery, Redshift, Databricks). MetricFlow — open-sourced under Apache 2.0 in October 2025 — is a vendor-agnostic query generation engine where semantic definitions travel with your dbt project. This is a philosophical difference from any platform-locked approach. <strong>Important caveat:</strong> dbt Semantic Layer does not currently support Microsoft Fabric as a data platform — if your stack is Fabric + dbt, MetricFlow is not a viable option today.</td>
             </tr>
             <tr>
                 <td><strong>Genie Spaces (Databricks)</strong></td>
@@ -543,9 +543,10 @@
     <p>If you already have a well-built Power BI semantic model and your main goal is better BI reports, stop here — IQ is overkill. IQ adds value when you need AI agents to reason across multiple data sources using business concepts, or when relationship traversal (e.g., Customer → Order → Shipment → Sensor) matters more than dimensional aggregation.</p>
 
     <div class="callout callout-warning">
-        <div class="callout-title">Vendor lock-in is a real consideration</div>
-        <p>Analysts including Robert Kramer (Moor Insights) and Suhas AR have flagged this directly: <em>"The more an enterprise builds on this semantic layer, the harder it becomes to move that logic elsewhere."</em> (<a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">InfoWorld</a>). Every entity type, property, and relationship you define in a Fabric IQ ontology exists only in Microsoft Fabric. There is no export format, no interoperability standard, no migration path to another platform. If your organization has a multi-cloud or platform-diversification policy, weigh this carefully.</p>
-        <p>For comparison: <strong>Databricks Metric Views</strong> (GA late 2025) and <strong>Snowflake Semantic Views</strong> (GA August 2025) both reached production-ready status in 2025 with native git-based versioning. dbt MetricFlow works across multiple warehouses by design. Each of these competitors solves a similar AI grounding problem with more portability. Fabric IQ wins on Fabric-native integration depth — it loses on lock-in risk and ecosystem breadth.</p>
+        <div class="callout-title">Vendor lock-in and OneLake data gravity</div>
+        <p>Analysts including Robert Kramer (Moor Insights) and Suhas AR have flagged this directly: <em>"The more an enterprise builds on this semantic layer, the harder it becomes to move that logic elsewhere."</em> (<a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">InfoWorld</a>). Every entity type, property, and relationship you define in a Fabric IQ ontology exists only in Microsoft Fabric with no export format or migration path.</p>
+        <p>There is also a data gravity problem that belongs in any honest evaluation: <strong>Fabric IQ only binds to data in OneLake.</strong> If your enterprise has data in Google BigQuery, Teradata, Snowflake, or on-premises SQL Server, that data must be physically copied to OneLake before it can participate in an ontology. This is not a configuration option — it is an architectural constraint. By contrast, Palantir Foundry's Multimodal Data Plane (MMDP) connects to those systems via virtual tables without requiring a copy. For organizations with an established multi-cloud data estate, this OneLake data gravity is a significant migration cost that tables and bullet points tend to understate.</p>
+        <p>For comparison: <strong>Databricks Metric Views</strong> (GA late 2025) and <strong>Snowflake Semantic Views</strong> (GA August 2025) both reached production-ready status in 2025 with native git-based versioning. Each of these competitors solves a similar AI grounding problem with more portability. Fabric IQ wins on Fabric-native integration depth — it loses on data gravity, lock-in risk, and API maturity.</p>
     </div>
 
     <h3>Competitive Landscape: Fabric IQ vs. the Market</h3>
@@ -772,6 +773,11 @@
     <h2 id="deployment">5. Step-by-Step Deployment Guide</h2>
 
     <p>This section walks through the full deployment of Fabric IQ from a blank Fabric workspace to a working Data Agent answering natural language questions about your business data.</p>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">Prerequisite zero: data governance maturity</div>
+        <p>The deployment steps below assume your organization already has <strong>consistent data definitions, clear data ownership, and governed pipelines</strong>. Fabric IQ does not create these — it exposes them as a semantic layer. If your teams disagree on what a "Customer" is, if the same concept is modelled differently in three different Lakehouse tables, or if data lineage is unclear, adding an ontology layer will not fix that. As Directions on Microsoft notes, even a carefully designed ontology definition of "customer" collides immediately with the reality that different teams have different address-line conventions, different lifecycle states, and different source systems. <strong>For organizations below a certain data governance maturity, Fabric IQ adds a new layer on top of an existing chaos — it doesn't resolve it.</strong></p>
+    </div>
 
     <h3>Prerequisites</h3>
     <ul>
@@ -1108,6 +1114,11 @@ DESCRIBE TABLE your_table_name;</code></pre>
     <p>Bind Eventhouse for live operational data and Lakehouse for historical batch — then let the ontology federate both. The graph handles the join. A concrete example: in a manufacturing plant, sensor telemetry arrives in Eventhouse at second-level granularity. Maintenance records and equipment specs live in a Lakehouse as managed delta tables. Without Fabric IQ, answering "which machines are at risk based on current readings versus historical failure patterns?" requires an ad hoc join across two systems. With IQ, the ontology encodes the relationship between <code>Machine → SensorReading → MaintenanceRecord</code>, and the Data Agent translates the natural language question into federated GQL + KQL automatically.</p>
     <p>Key operational detail: Eventhouse bindings are <strong>live</strong> (no refresh lag), while Lakehouse bindings refresh on a schedule. Design your entity taxonomy so time-sensitive properties are sourced from Eventhouse and historical aggregates from Lakehouse.</p>
 
+    <div class="callout callout-warning">
+        <div class="callout-title">The real-time contradiction</div>
+        <p>If the cold chain monitoring example above uses <em>Lakehouse</em> as the binding for sensor data, the ontology queries will return stale data — potentially hours old depending on your refresh schedule. For any genuinely real-time use case (anomaly detection, live SLA tracking, supply chain monitoring), Lakehouse bindings defeat the purpose. <strong>Real-time scenarios require Eventhouse bindings.</strong> Before building Operations Agent workflows, verify that every time-sensitive entity is bound to Eventhouse, not Lakehouse — even if the primary source of historical data is a Lakehouse.</p>
+    </div>
+
     <h3>Pattern 2: Generate First, Clean Second — But Budget Realistically</h3>
 
     <div class="callout callout-note">
@@ -1166,9 +1177,10 @@ DESCRIBE TABLE your_table_name;</code></pre>
 
     <p><strong>What to watch before going production:</strong></p>
     <ul>
-        <li>Versioning support — <a href="https://community.fabric.microsoft.com/t5/Fabric-Ideas/idb-p/fbc_ideas" target="_blank">submit a request on Fabric Ideas</a> with the label <strong>IQ | Ontology</strong></li>
+        <li><strong>Programmatic API</strong> — the absence of a REST API or CLI is not a "consideration," it's a blocker for any organization that wants to manage ontology changes through CI/CD, integrate with existing tooling, or automate refreshes. Watch for API announcements on the <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new" target="_blank">Fabric What's New page</a>.</li>
+        <li><strong>Versioning support</strong> — <a href="https://community.fabric.microsoft.com/t5/Fabric-Ideas/idb-p/fbc_ideas" target="_blank">submit a Fabric Ideas request</a> with the label <strong>IQ | Ontology</strong></li>
         <li>Import mode semantic model support for data binding</li>
-        <li>GA announcement — monitor the <a href="https://learn.microsoft.com/en-us/fabric/fundamentals/whats-new" target="_blank">Fabric What's New page</a></li>
+        <li>GA announcement and billing meter publication — costs are unclear until Microsoft publishes Ontology item billing meters (planned H1 2026)</li>
     </ul>
 
     <h3>Next Steps</h3>
