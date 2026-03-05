@@ -483,8 +483,8 @@
                 <td>You need KPIs, measures, DAX, and governed BI reports — IQ doesn't replace this</td>
             </tr>
             <tr>
-                <td><strong>dbt semantic layer</strong></td>
-                <td>Your team lives in SQL/dbt and wants semantic definitions portable across tools outside Fabric</td>
+                <td><strong>dbt MetricFlow</strong></td>
+                <td>You need semantic definitions that are portable across multiple warehouses (Snowflake, BigQuery, Redshift, Databricks). MetricFlow is a vendor-agnostic query generation engine — semantic definitions travel with your dbt project, not locked to one platform. This is a philosophical difference, not just a team preference.</td>
             </tr>
             <tr>
                 <td><strong>Genie Spaces (Databricks)</strong></td>
@@ -502,6 +502,12 @@
     </table>
 
     <p>If you already have a well-built Power BI semantic model and your main goal is better BI reports, stop here — IQ is overkill. IQ adds value when you need AI agents to reason across multiple data sources using business concepts, or when relationship traversal (e.g., Customer → Order → Shipment → Sensor) matters more than dimensional aggregation.</p>
+
+    <div class="callout callout-warning">
+        <div class="callout-title">Vendor lock-in is a real consideration</div>
+        <p>Analysts including Robert Kramer (Moor Insights) and Suhas AR have flagged this directly: <em>"The more an enterprise builds on this semantic layer, the harder it becomes to move that logic elsewhere."</em> (<a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">InfoWorld</a>). Every entity type, property, and relationship you define in a Fabric IQ ontology exists only in Microsoft Fabric. There is no export format, no interoperability standard, no migration path to another platform. If your organization has a multi-cloud or platform-diversification policy, weigh this carefully.</p>
+        <p>For comparison: <strong>Databricks Metric Views</strong> (GA late 2025) and <strong>Snowflake Semantic Views</strong> (GA August 2025) both reached production-ready status in 2025 with native git-based versioning. dbt MetricFlow works across multiple warehouses by design. Each of these competitors solves a similar AI grounding problem with more portability. Fabric IQ wins on Fabric-native integration depth — it loses on lock-in risk and ecosystem breadth.</p>
+    </div>
 
     <!-- SECTION 3 -->
     <h2 id="architecture">3. Architecture Under the Hood</h2>
@@ -603,6 +609,11 @@
 
     <p>If you already have a well-structured Power BI semantic model, you can <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/concepts-generate" target="_blank">generate an ontology from it</a> automatically. This is the recommended starting point for most enterprises — you don't need to rebuild your business vocabulary from scratch. The auto-generation imports your tables, relationships, and measures into ontology entity types and relationships.</p>
 
+    <div class="callout callout-note">
+        <div class="callout-title">Reality check: "business experts can build ontologies" is aspirational</div>
+        <p>Microsoft markets Fabric IQ as something "business experts can build and evolve without engineers." Independent analysts (SoftwareReviews) found the ontology editor in practice requires data engineering familiarity — entity type modelling, property binding, graph refresh management. Business users can <em>consume</em> an ontology via the Data Agent, but they cannot reliably <em>build</em> one without engineering support. Plan for a data engineering resource to own ontology creation and maintenance, even if business subject-matter experts define the vocabulary.</p>
+    </div>
+
     <div class="callout callout-warning">
         <div class="callout-title">Limitation</div>
         <p>Auto-generation only works if your semantic model is <strong>not</strong> in "My Workspace" and is <strong>not</strong> in Import mode. Both of these will silently produce an empty ontology. See the Pitfalls section for details.</p>
@@ -615,7 +626,7 @@
 
     <h3>Prerequisites</h3>
     <ul>
-        <li>A <strong>paid Microsoft Fabric capacity</strong> (F2 or higher). Fabric IQ is included with existing subscriptions at no additional licensing cost.</li>
+        <li>A <strong>paid Microsoft Fabric capacity</strong> (F2 or higher). As of early 2026, Fabric IQ does not carry an additional license SKU — it runs on your existing capacity. Note: Microsoft has not yet published billing meters for the Ontology item; metered billing is planned for H1 2026 (<a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">InfoWorld</a>). Verify current pricing before production commitments.</li>
         <li><strong>Fabric administrator access</strong> to the tenant settings in the Admin Portal.</li>
         <li>A workspace with a Fabric-enabled capacity assigned (not "My workspace").</li>
         <li>Data in OneLake — either Lakehouse managed delta tables, an Eventhouse KQL database, or an existing Power BI semantic model.</li>
@@ -623,35 +634,30 @@
 
     <h3>Step 1: Enable Required Tenant Settings</h3>
 
-    <p>This is the step most people skip and then spend hours debugging. You need to enable <strong>six tenant settings</strong> in the Fabric Admin Portal. Missing even one will produce errors — often unhelpful ones.</p>
+    <p>Go to <strong>Fabric Admin Portal → Tenant settings</strong>. The full reference is at <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/overview-tenant-settings" target="_blank">Ontology (preview) required tenant settings</a>.</p>
 
-    <p>Go to <strong>Fabric Admin Portal → Tenant settings</strong> and enable the following. For the full reference, see <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/overview-tenant-settings" target="_blank">Ontology (preview) required tenant settings</a>.</p>
-
-    <p><strong>Under the IQ / Ontology section:</strong></p>
+    <p><strong>Always required (for any ontology use):</strong></p>
     <ol>
-        <li><code>Enable Ontology item (preview)</code> — <strong>Required.</strong> Without this, creating an ontology item fails immediately.</li>
+        <li><code>Enable Ontology item (preview)</code> — Without this, creating an ontology item fails immediately.</li>
+        <li><code>User can create Graph (preview)</code> — The ontology item creates an underlying Graph item automatically. Without this, you get: <em>"Unable to create the Ontology (preview) item. Please try again or contact support if the issue persists."</em></li>
     </ol>
 
-    <p><strong>Under the Graph section:</strong></p>
-    <ol start="2">
-        <li><code>User can create Graph (preview)</code> — <strong>Required.</strong> The ontology item creates an underlying Graph item automatically. Without this, you get: <em>"Unable to create the Ontology (preview) item. Please try again or contact support if the issue persists."</em></li>
-    </ol>
-
-    <p><strong>Under the Data Science section:</strong></p>
+    <p><strong>Required only if you use the Data Agent (conversational Q&amp;A):</strong></p>
     <ol start="3">
-        <li><code>Users can create and share Data agent item types (preview)</code> — Required if you want the conversational Data Agent.</li>
-    </ol>
-
-    <p><strong>Under Copilot and Azure OpenAI Service:</strong></p>
-    <ol start="4">
+        <li><code>Users can create and share Data agent item types (preview)</code></li>
         <li><code>Users can use Copilot and other features powered by Azure OpenAI</code></li>
         <li><code>Data sent to Azure OpenAI can be processed outside your capacity's geographic region, compliance boundary, or national cloud instance</code></li>
         <li><code>Data sent to Azure OpenAI can be stored outside your capacity's geographic region, compliance boundary, or national cloud instance</code></li>
     </ol>
 
+    <div class="callout callout-note">
+        <div class="callout-title">If you only want the ontology (no Data Agent)</div>
+        <p>Enable settings 1 and 2 only. You can build, bind, and explore your ontology graph without the Data Agent. Add settings 3–6 only when you're ready to stand up the conversational agent.</p>
+    </div>
+
     <div class="callout callout-warning">
-        <div class="callout-title">Data residency notice</div>
-        <p>Settings 5 and 6 allow your ontology query data to be processed and temporarily stored outside your Fabric capacity's home region. If your organization has GDPR, HIPAA, or similar requirements, review these with your compliance team before enabling. Disabling them blocks the Data Agent's NL2Ontology features with a <code>403 Forbidden - Disallowed</code> error.</p>
+        <div class="callout-title">Data residency notice (settings 5 and 6)</div>
+        <p>These settings allow your ontology query data to be processed and temporarily stored outside your Fabric capacity's home region. If your organization has GDPR, HIPAA, or similar requirements, review these with your compliance team before enabling. Disabling them blocks the Data Agent's NL2Ontology features with a <code>403 Forbidden - Disallowed</code> error.</p>
     </div>
 
     <h3>Step 2: Prepare Your Data Sources</h3>
@@ -738,14 +744,14 @@ When asked about revenue, use the SaleEvent.revenue property.</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 1: The Tenant Settings Cascade</h3>
+        <h3>Pitfall 1: Confusing Required vs Conditional Tenant Settings</h3>
         <p class="pitfall-label">Symptom</p>
-        <p>Ontology item creation fails with a generic error.</p>
+        <p>Ontology item creation fails with a generic error, OR Data Agent queries fail with <code>403 Forbidden - Disallowed</code> even though the ontology itself works.</p>
         <p class="pitfall-label">Cause</p>
-        <p>You need six tenant settings enabled, spread across different sections of the Admin Portal. Missing the Graph setting produces the specific error: <em>"Unable to create the Ontology (preview) item. Please try again or contact support if the issue persists."</em></p>
+        <p>The <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/overview-tenant-settings" target="_blank">official tenant settings docs</a> distinguish between two always-required settings and four conditional ones needed only for Data Agent. The two settings that block ontology creation entirely are <code>Enable Ontology item (preview)</code> and <code>User can create Graph (preview)</code>. The remaining four (Data Agent item type + three Azure OpenAI settings) are only needed for conversational Q&amp;A. Enabling or skipping the wrong combination produces errors that don't tell you which setting is missing.</p>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
-            <p>Enable all six settings listed in Step 1 before starting. Don't guess which ones you need — enable all of them.</p>
+            <p>Enable settings 1 and 2 unconditionally. Enable settings 3–6 only when you intend to use Data Agent. See Step 1 of this guide for the complete breakdown.</p>
         </div>
     </div>
 
@@ -840,14 +846,14 @@ DESCRIBE TABLE your_table_name;</code></pre>
     </div>
 
     <div class="pitfall">
-        <h3>Pitfall 8: No Versioning — Edits Are Permanent</h3>
+        <h3>Pitfall 8: No Versioning — Edits Are Permanent (Despite What the Overview Page Says)</h3>
         <p class="pitfall-label">Symptom</p>
         <p>An accidental rename of an entity type breaks downstream Data Agent queries with no way to roll back.</p>
         <p class="pitfall-label">Cause</p>
-        <p>Ontology does <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-frequently-asked-questions" target="_blank">not support versioning</a>. There is no rollback capability.</p>
+        <p>The <a href="https://learn.microsoft.com/en-us/fabric/iq/ontology/resources-frequently-asked-questions" target="_blank">ontology FAQ</a> is unambiguous: <em>"No, versioning isn't currently available."</em> This contradicts the <a href="https://learn.microsoft.com/en-us/fabric/iq/overview" target="_blank">Fabric IQ overview page</a>, which lists "You can version, validate, and govern your ontology definitions" as a capability. That overview language is roadmap aspiration, not current functionality — the FAQ is the operational truth. Both pages are on Microsoft Learn as of March 2026, so the contradiction is a documentation gap. Additionally, competitors such as Databricks Metric Views and Snowflake Semantic Views reached GA in 2025 with native git-based versioning, making the absence more conspicuous.</p>
         <div class="callout callout-tip">
             <div class="callout-title">Fix</div>
-            <p>Before making structural changes to a production ontology, export a copy, document the current state, and communicate changes to agent owners. Treat ontology changes with the same care as schema migrations.</p>
+            <p>Before making structural changes to a production ontology, export a copy, document the current schema (entity types, properties, relationships, bindings) in a separate artifact, and communicate changes to all agent owners. Treat ontology changes with the same care as schema migrations. <a href="https://community.fabric.microsoft.com/t5/Fabric-Ideas/idb-p/fbc_ideas" target="_blank">Submit a Fabric Ideas request</a> with label <strong>IQ | Ontology</strong> to push versioning up the roadmap.</p>
         </div>
     </div>
 
@@ -953,7 +959,13 @@ DESCRIBE TABLE your_table_name;</code></pre>
     <p>Bind Eventhouse for live operational data and Lakehouse for historical batch — then let the ontology federate both. The graph handles the join. A concrete example: in a manufacturing plant, sensor telemetry arrives in Eventhouse at second-level granularity. Maintenance records and equipment specs live in a Lakehouse as managed delta tables. Without Fabric IQ, answering "which machines are at risk based on current readings versus historical failure patterns?" requires an ad hoc join across two systems. With IQ, the ontology encodes the relationship between <code>Machine → SensorReading → MaintenanceRecord</code>, and the Data Agent translates the natural language question into federated GQL + KQL automatically.</p>
     <p>Key operational detail: Eventhouse bindings are <strong>live</strong> (no refresh lag), while Lakehouse bindings refresh on a schedule. Design your entity taxonomy so time-sensitive properties are sourced from Eventhouse and historical aggregates from Lakehouse.</p>
 
-    <h3>Pattern 2: Generate First, Clean Second</h3>
+    <h3>Pattern 2: Generate First, Clean Second — But Budget Realistically</h3>
+
+    <div class="callout callout-note">
+        <div class="callout-title">The cold start problem</div>
+        <p>Constellation Research's Michael Ni said it plainly: <em>"Ontologies don't build themselves. There is upfront work for IT."</em> (<a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">InfoWorld</a>). Auto-generation from a semantic model gets you a structural scaffold — but renaming every entity type, writing descriptions for every property, validating bindings, and testing the Data Agent can take days to weeks depending on domain complexity. Plan for this cost explicitly in your pilot timeline.</p>
+    </div>
+
     <p>Use the auto-generate-from-semantic-model path to bootstrap your ontology, then rename entity types to business language and add descriptions before binding agents. Do not start from scratch unless you have no semantic model — the auto-generation saves hours of entity and relationship definition work. The generated ontology will use technical table names (<code>fact_sales_v2</code>, <code>dim_customer_final</code>). Your job after generation is to rename these to business terms (<code>SaleEvent</code>, <code>Customer</code>) and add plain-English descriptions to every entity type and property before anyone queries the Data Agent.</p>
 
     <h3>Pattern 3: Ontology as Agent Documentation</h3>
@@ -1115,6 +1127,16 @@ DESCRIBE TABLE your_table_name;</code></pre>
                 <a href="https://community.fabric.microsoft.com/t5/IQ-Community-Blog/Unifying-Data-into-Intelligence-A-Hands-On-Walk-Through/ba-p/4911603" target="_blank">Unifying Data into Intelligence: A Hands-On Walk-Through</a>
                 <span class="source-type">community</span><br>
                 <span class="source-desc">Fabric IQ Community Blog, 2026 — step-by-step practitioner walkthrough confirming auto-generated entity names are raw SQL table names requiring manual renaming. Source for Pitfall 11 community experience.</span>
+            </li>
+            <li>
+                <a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">Microsoft Fabric IQ adds semantic intelligence layer to Fabric</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">InfoWorld, 2026 — analyst coverage citing Robert Kramer (Moor Insights) on vendor lock-in, Michael Ni (Constellation Research) on cold start cost, and Microsoft's billing meter timeline. Primary source for lock-in warning and cold start callout.</span>
+            </li>
+            <li>
+                <a href="https://www.typedef.ai/resources/semantic-layer-metricflow-vs-snowflake-vs-databricks" target="_blank">Semantic Layer Architectures: MetricFlow vs Snowflake vs Databricks</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">Typedef, 2025 — GA status of Databricks Metric Views (late 2025) and Snowflake Semantic Views (August 2025), and dbt MetricFlow's vendor-agnostic architecture. Source for competitive context in alternatives section.</span>
             </li>
         </ol>
     </section>
