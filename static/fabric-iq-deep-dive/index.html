@@ -385,6 +385,40 @@
 
         blockquote p { margin-bottom: 0; }
 
+        .comparison-table {
+            font-size: 0.83rem;
+            width: 100%;
+        }
+
+        .comparison-table th {
+            white-space: nowrap;
+        }
+
+        .comparison-table td {
+            padding: 0.45rem 0.7rem;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+
+        .comparison-table .dim-label {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .winner-badge {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-left: 0.25rem;
+            vertical-align: middle;
+        }
+
         @media (max-width: 600px) {
             .article-hero { padding: 2.5rem 1.25rem 2rem; }
             .article-container { padding: 1.5rem 1rem 3rem; }
@@ -402,7 +436,7 @@
     <div class="article-meta">
         <span>Maciej Rubczyński</span>
         <span>March 2026</span>
-        <span>20 min read</span>
+        <span>25 min read</span>
     </div>
 </header>
 
@@ -463,6 +497,11 @@
 
     <p>In practice, Fabric IQ rarely operates in isolation — agents built on top of it can pull context from Foundry IQ (unstructured documents) and Work IQ (M365 activity) simultaneously, giving a single agent access to structured, unstructured, and collaboration data in one response.</p>
 
+    <div class="callout callout-note">
+        <div class="callout-title">This is not a new concept</div>
+        <p>Enterprise ontologies have existed for 30+ years, rooted in the W3C OWL and RDF standards developed in the early 2000s. Palantir Foundry has had an operational ontology at its technical core for over a decade. Stardog, Neo4j, and AWS Neptune have provided enterprise knowledge graph platforms since 2011. What Fabric IQ adds is an accessibility layer: a visual no-code editor that brings semantic entity modeling into the reach of data engineering teams without requiring semantic web specialists — and tight integration with Microsoft's existing BI and AI ecosystem. The underlying problem — how do you give AI agents a shared, governed understanding of your business concepts — is one the industry has been solving for years.</p>
+    </div>
+
     <div class="screenshot-wrapper">
         <img src="./images/fabric-iq-ecosystem.png" alt="The Microsoft IQ Family — Work IQ, Fabric IQ, and Foundry IQ feeding into Universal Enterprise Context" />
         <div class="caption">The three components of Microsoft's IQ family, all feeding into a unified enterprise context layer.</div>
@@ -507,6 +546,143 @@
         <div class="callout-title">Vendor lock-in is a real consideration</div>
         <p>Analysts including Robert Kramer (Moor Insights) and Suhas AR have flagged this directly: <em>"The more an enterprise builds on this semantic layer, the harder it becomes to move that logic elsewhere."</em> (<a href="https://www.infoworld.com/article/4093181/microsoft-fabric-iq-adds-semantic-intelligence-layer-to-fabric.html" target="_blank">InfoWorld</a>). Every entity type, property, and relationship you define in a Fabric IQ ontology exists only in Microsoft Fabric. There is no export format, no interoperability standard, no migration path to another platform. If your organization has a multi-cloud or platform-diversification policy, weigh this carefully.</p>
         <p>For comparison: <strong>Databricks Metric Views</strong> (GA late 2025) and <strong>Snowflake Semantic Views</strong> (GA August 2025) both reached production-ready status in 2025 with native git-based versioning. dbt MetricFlow works across multiple warehouses by design. Each of these competitors solves a similar AI grounding problem with more portability. Fabric IQ wins on Fabric-native integration depth — it loses on lock-in risk and ecosystem breadth.</p>
+    </div>
+
+    <h3>Competitive Landscape: Fabric IQ vs. the Market</h3>
+
+    <p>Before committing to Fabric IQ, it's worth understanding where it sits in the broader market for enterprise semantic layers and ontology platforms. The key distinction that matters for AI agent use cases:</p>
+
+    <div class="callout callout-note">
+        <div class="callout-title">Semantic layer vs. ontology: why it matters for AI agents</div>
+        <p><strong>Metric-centric semantic layers</strong> (Snowflake Semantic Views, Databricks Metric Views, dbt MetricFlow) answer <em>lookup questions</em>: "What was revenue by region last quarter?" They define facts, metrics, and dimensions for BI consumption. <strong>Entity-relationship ontologies</strong> (Fabric IQ, Palantir Foundry, Stardog) provide <em>context and reasoning</em>: "Find all customers with delayed shipments linked to open SLA incidents on priority contracts — and explain why." Gartner's 2025 Hype Cycle for BI & Analytics concluded that AI agents at enterprise scale require the latter: enriched business definitions, ontologies, relationships, and context — not just metric lookups.</p>
+    </div>
+
+    <div style="overflow-x: auto; margin: 1.5rem 0;">
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Dimension</th>
+                <th>Fabric IQ (Microsoft)</th>
+                <th>Palantir Foundry</th>
+                <th>Snowflake Intelligence</th>
+                <th>Databricks UC Metric Views</th>
+                <th>Stardog EKG</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="dim-label">Status (early 2026)</td>
+                <td><strong>Public Preview</strong><br>(Nov 2025)</td>
+                <td>GA <span class="winner-badge">10+ yrs</span></td>
+                <td>GA (Nov 2025)</td>
+                <td>GA (late 2025)</td>
+                <td>GA (2011)</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Semantic model type</td>
+                <td>Entity ontology (entities, relationships, rules)</td>
+                <td>Operational digital twin (entities + write-back Actions)</td>
+                <td>Metric/BI layer (facts, measures, dimensions)</td>
+                <td>Metric/BI layer (measures, dimensions, YAML)</td>
+                <td>W3C OWL/RDF knowledge graph (formal inference)</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Data location</td>
+                <td>OneLake only — external data must be copied</td>
+                <td>Federated (MMDP connects Snowflake, Databricks, etc.)<span class="winner-badge">No copy</span></td>
+                <td>Snowflake-native</td>
+                <td>Unity Catalog / Delta Lake</td>
+                <td>Federated / virtual — data stays in place <span class="winner-badge">No copy</span></td>
+            </tr>
+            <tr>
+                <td class="dim-label">Formal reasoning</td>
+                <td>Business rules in ontology</td>
+                <td>Functions + Action Types (TypeScript/Python)</td>
+                <td>None</td>
+                <td>None</td>
+                <td>OWL inference engine <span class="winner-badge">Strongest</span></td>
+            </tr>
+            <tr>
+                <td class="dim-label">Write-back / Actions</td>
+                <td>Limited (Operations Agent)</td>
+                <td>Full write-back to any system <span class="winner-badge">Best-in-class</span></td>
+                <td>None</td>
+                <td>None</td>
+                <td>None</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Programmatic API</td>
+                <td>None documented yet</td>
+                <td>OSDK (TypeScript, Python, Java, OpenAPI export) <span class="winner-badge">Richest</span></td>
+                <td>REST <code>/api/v2/cortex/analyst/</code></td>
+                <td>Genie Conversation API; DABs CI/CD</td>
+                <td>SPARQL, REST, MCP server</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Versioning</td>
+                <td>Not available</td>
+                <td>OSDK v1/v2; multi-ontology support</td>
+                <td>No semantic view versioning</td>
+                <td>YAML spec v1.1; Git via DABs <span class="winner-badge">CI/CD-ready</span></td>
+                <td>Platform versioned</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Agent integration</td>
+                <td>Data Agent + Operations Agent (preview)</td>
+                <td>AIP Agents (GA); Foundry IQ</td>
+                <td>Snowflake Intelligence agents (GA)</td>
+                <td>Genie + Azure AI Foundry connector (GA)</td>
+                <td>Voicebox; official MCP server for Claude/GPT</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Open standards</td>
+                <td>Proprietary</td>
+                <td>Proprietary</td>
+                <td>Proprietary</td>
+                <td>dbt MetricFlow open-sourced (Oct 2025)</td>
+                <td>W3C RDF/OWL/SPARQL <span class="winner-badge">Most open</span></td>
+            </tr>
+            <tr>
+                <td class="dim-label">Bootstrap from existing models</td>
+                <td>Auto-generate from Power BI semantic models</td>
+                <td>AI-assisted in AIP</td>
+                <td>Semantic View Autopilot (GA)</td>
+                <td>Manual YAML</td>
+                <td>Import from OWL/RDF, Voicebox-assisted</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Pricing</td>
+                <td>Fabric capacity ($263/mo F2+)</td>
+                <td>Multi-million dollar contracts</td>
+                <td>Consumption-based (Snowflake credits)</td>
+                <td>Databricks DBU-based</td>
+                <td>Enterprise contract</td>
+            </tr>
+            <tr>
+                <td class="dim-label">Best for</td>
+                <td>Microsoft-centric enterprise; Power BI investment</td>
+                <td>Defense, pharma, large enterprise needing operational AI</td>
+                <td>Snowflake customers; BI-led NL queries</td>
+                <td>Databricks lakehouse customers; ML teams</td>
+                <td>Regulated industries needing formal reasoning + open standards</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <h3>Who Should Use What?</h3>
+
+    <p><strong>Use Fabric IQ if:</strong> your organization is deeply Microsoft-centric (Azure + Power BI + M365), you have existing Power BI semantic models to auto-generate from, and you're building AI agents that need to reason across multiple OneLake data sources using cross-domain entity relationships. The low-code editor and free bootstrapping from Power BI are genuine advantages for organizations starting from scratch on a Microsoft stack.</p>
+
+    <p><strong>Use Palantir Foundry if:</strong> you need operational write-back capabilities (agents that don't just answer questions but take actions in source systems), federated data access without ETL to a single lake, and you have the budget and organizational commitment for a multi-year platform. The 10-year maturity gap over Fabric IQ is real.</p>
+
+    <p><strong>Use Snowflake Intelligence or Databricks Metric Views if:</strong> your primary use case is BI-oriented NL queries ("what was Q3 revenue?") rather than deep relationship reasoning. Both are GA, both have REST APIs, and both work well if your data already lives in those platforms. Databricks wins on ML/data science integration; Snowflake wins on BI governance. Neither replaces a true entity-relationship ontology for complex AI reasoning.</p>
+
+    <p><strong>Use Stardog if:</strong> you need formal OWL inference (logical deduction beyond rules), federated access without data copying, open W3C standards for portability, and you operate in a regulated industry. The MCP server integration makes it uniquely accessible to current LLM tooling workflows.</p>
+
+    <div class="callout callout-note">
+        <div class="callout-title">Wait and watch recommendation</div>
+        <p>If your organization has <strong>low data maturity</strong> (inconsistent definitions, no existing semantic models, governance still in progress), or is <strong>not heavily invested in Microsoft Azure</strong>, the Directions on Microsoft assessment applies: Fabric IQ items "are new (with many features still in preview) and not yet widely adopted." The right move is to monitor progress toward GA, watch for versioning and API support, and run a limited pilot on non-critical data. Committing production ontology investment before GA — without versioning, API access, or billing certainty — adds organizational risk that most enterprises should not take on in 2026.</p>
     </div>
 
     <!-- SECTION 3 -->
@@ -946,7 +1122,7 @@ DESCRIBE TABLE your_table_name;</code></pre>
     <h3>Controlling Access</h3>
     <p>Ontology items follow standard Fabric workspace roles:</p>
     <ul>
-        <li><strong>Viewer</strong> — Can query the ontology but not edit it. Note: Viewer gets a <code>403 Forbidden</code> error in some preview experience scenarios — users need at least Contributor access for the full preview experience.</li>
+        <li><strong>Viewer</strong> — Intended for querying the ontology without editing it. Note: Viewer access produces <code>403 Forbidden</code> errors in some preview UI scenarios — this is a known preview bug, not a permissions model recommendation. Do not use "give everyone Contributor" as a workaround in a production environment; instead, wait for this bug to be resolved and design your access model around the principle of least privilege.</li>
         <li><strong>Contributor</strong> — Can edit entity types, properties, and bindings.</li>
         <li><strong>Admin/Member</strong> — Full control including deletion.</li>
     </ul>
@@ -1137,6 +1313,41 @@ DESCRIBE TABLE your_table_name;</code></pre>
                 <a href="https://www.typedef.ai/resources/semantic-layer-metricflow-vs-snowflake-vs-databricks" target="_blank">Semantic Layer Architectures: MetricFlow vs Snowflake vs Databricks</a>
                 <span class="source-type">blog</span><br>
                 <span class="source-desc">Typedef, 2025 — GA status of Databricks Metric Views (late 2025) and Snowflake Semantic Views (August 2025), and dbt MetricFlow's vendor-agnostic architecture. Source for competitive context in alternatives section.</span>
+            </li>
+            <li>
+                <a href="https://www.palantir.com/platforms/ontology/" target="_blank">Palantir Foundry Ontology</a>
+                <span class="source-type">docs</span><br>
+                <span class="source-desc">Palantir — official overview of the Foundry Ontology: entity types, relationships, Action Types, and the OSDK. The 10-year reference point for operational enterprise ontology.</span>
+            </li>
+            <li>
+                <a href="https://docs.snowflake.com/en/user-guide/views-semantic/overview" target="_blank">Snowflake Semantic Views Overview</a>
+                <span class="source-type">docs</span><br>
+                <span class="source-desc">Snowflake Docs — Semantic Views GA (October 2025), Cortex Analyst REST API, and Snowflake Intelligence (GA November 2025). Source for Snowflake row in competitive comparison.</span>
+            </li>
+            <li>
+                <a href="https://docs.databricks.com/aws/en/metric-views/" target="_blank">Unity Catalog Metric Views — Databricks</a>
+                <span class="source-type">docs</span><br>
+                <span class="source-desc">Databricks Docs — Metric Views YAML spec v1.1, GA status (late 2025), Genie Conversation API, and CI/CD via Databricks Asset Bundles. Source for Databricks row.</span>
+            </li>
+            <li>
+                <a href="https://www.stardog.com/agentic-ai-knowledge-graph/" target="_blank">Stardog Agentic AI with Knowledge Graphs</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">Stardog — Voicebox NL→SPARQL, MCP server integration, W3C OWL inference engine, and federated data access. Source for Stardog row in competitive comparison.</span>
+            </li>
+            <li>
+                <a href="https://siliconangle.com/2026/01/05/data-2026-outlook-rise-semantic-spheres-influence/" target="_blank">Data 2026 Outlook: Rise of Semantic Spheres of Influence</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">SiliconAngle, January 2026 — analyst framing of Microsoft, Databricks, Snowflake, and Palantir as competing "semantic spheres of influence" with strategic lock-in implications.</span>
+            </li>
+            <li>
+                <a href="https://www.directionsonmicrosoft.com/cio-talk-microsoft-gets-iq/" target="_blank">CIO Talk: Microsoft Gets IQ</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">Directions on Microsoft — positions Fabric IQ as Microsoft's response to Palantir; "for Microsoft-centric enterprises, likely the right choice" but warns about immaturity for others. Source for wait-and-watch recommendation.</span>
+            </li>
+            <li>
+                <a href="https://metadataweekly.substack.com/p/ontologies-context-graphs-and-semantic" target="_blank">Ontologies, Context Graphs, and Semantic Layers</a>
+                <span class="source-type">blog</span><br>
+                <span class="source-desc">MetadataWeekly, 2026 — "A semantic layer is for lookup; an ontology is for context and reasoning." Draws the metric-layer vs. entity-ontology distinction critical for AI agent design.</span>
             </li>
         </ol>
     </section>
